@@ -156,48 +156,5 @@ namespace WindowsForm
             DateTime fiveDaysLater = today.AddDays(5);
             Console.WriteLine($"Payment Due Date: {fiveDaysLater.ToString("dd/MM/yyyy")}");
         }
-
-        static void Main(string[] args)
-        {
-            //Console.Write("Input Electricity Usage: ");
-            //int eValue = Convert.ToInt32(Console.ReadLine());
-            //int billAmount = calculateBill(eValue);
-            //printBill(billAmount);
-            int menuChoice = 1;
-            while (menuChoice != 0)
-            {
-
-                Console.WriteLine("---------Menu-----------");
-                Console.WriteLine("Please choose your action: ");
-                Console.WriteLine("1 - Add a new customer");
-                Console.WriteLine("2 - Print all customer bill");
-                Console.WriteLine("0 - Exit");
-                menuChoice = Convert.ToInt32(Console.ReadLine());
-                switch (menuChoice)
-                {
-                    case 1:
-                        inputCustomerInfo();
-                        CustomerQuantity++;
-                        break;
-                    case 2:
-                        for (int i = 0; i < CustomerQuantity; i++)
-                        {
-                            printBill(i);
-                        }
-                        printBill(0);
-                        break;
-                    case 0:
-                        Console.WriteLine("Exiting the program...");
-                        break;
-                    default:
-                        Console.WriteLine("Please choose valid values");
-                        break;
-                }
-                inputCustomerInfo();
-                printBill(CustomerQuantity - 1);
-            }
-
-        }
     }
 }
-

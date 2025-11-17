@@ -28,9 +28,9 @@
         /// </summary>
         private void InitializeComponent()
         {
-            btnName = new Button();
-            btnLastMonth = new Button();
-            btnThisMonth = new Button();
+            txtName = new TextBox();
+            txtLastMonth = new TextBox();
+            txtThisMonth = new TextBox();
             btnUsage = new Button();
             btnBill = new Button();
             label1 = new Label();
@@ -52,30 +52,27 @@
             UsageAmount = new ColumnHeader();
             ElectricityBill = new ColumnHeader();
             SuspendLayout();
-            // 
-            // btnName
-            // 
-            btnName.Location = new Point(168, 68);
-            btnName.Name = "btnName";
-            btnName.Size = new Size(261, 29);
-            btnName.TabIndex = 0;
-            btnName.UseVisualStyleBackColor = true;
-            // 
-            // btnLastMonth
-            // 
-            btnLastMonth.Location = new Point(252, 188);
-            btnLastMonth.Name = "btnLastMonth";
-            btnLastMonth.Size = new Size(185, 29);
-            btnLastMonth.TabIndex = 1;
-            btnLastMonth.UseVisualStyleBackColor = true;
-            // 
-            // btnThisMonth
-            // 
-            btnThisMonth.Location = new Point(252, 250);
-            btnThisMonth.Name = "btnThisMonth";
-            btnThisMonth.Size = new Size(185, 29);
-            btnThisMonth.TabIndex = 3;
-            btnThisMonth.UseVisualStyleBackColor = true;
+            //
+            // txtName
+            //
+            txtName.Location = new Point(168, 68);
+            txtName.Name = "txtName";
+            txtName.Size = new Size(261, 29);
+            txtName.TabIndex = 0;
+            //
+            // txtLastMonth
+            //
+            txtLastMonth.Location = new Point(252, 188);
+            txtLastMonth.Name = "txtLastMonth";
+            txtLastMonth.Size = new Size(185, 29);
+            txtLastMonth.TabIndex = 1;
+            //
+            // txtThisMonth
+            //
+            txtThisMonth.Location = new Point(252, 250);
+            txtThisMonth.Name = "txtThisMonth";
+            txtThisMonth.Size = new Size(185, 29);
+            txtThisMonth.TabIndex = 3;
             // 
             // btnUsage
             // 
@@ -268,9 +265,9 @@
             Controls.Add(label1);
             Controls.Add(btnBill);
             Controls.Add(btnUsage);
-            Controls.Add(btnThisMonth);
-            Controls.Add(btnLastMonth);
-            Controls.Add(btnName);
+            Controls.Add(txtThisMonth);
+            Controls.Add(txtLastMonth);
+            Controls.Add(txtName);
             Name = "Form1";
             Text = "Electricity Application";
             Load += Form1_Load;
@@ -280,9 +277,9 @@
 
         #endregion
 
-        private Button btnName;
-        private Button btnLastMonth;
-        private Button btnThisMonth;
+        private TextBox txtName;
+        private TextBox txtLastMonth;
+        private TextBox txtThisMonth;
         private Button btnUsage;
         private Button btnBill;
         private Label label1;
