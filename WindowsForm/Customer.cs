@@ -17,49 +17,41 @@ namespace WindowsForm
         const string CUSTOMER_TYPE_HOUSEHOLD = "Household";
         const string CUSTOMER_TYPE_PUBLIC_SERVICE = "Public Service";
         /*
-         * input customer information
+         * Add customer information
          */
-        static void inputCustomerInfo()
+        static public bool AddCustomer(string name, string type, int lastMonth, int thisMonth)
         {
-            bool isWrongInput = true;
-
-            while (isWrongInput)
+            CustomerNameList[CustomerQuantity] = name;
+            switch (type)
             {
-                isWrongInput = false;
-                Console.WriteLine("--------------------");
-                Console.WriteLine("Input information for new customer: ");
-                Console.WriteLine("Input customer name: ");
-                CustomerNameList[CustomerQuantity] = Console.ReadLine();
-                Console.WriteLine("Input customer type: (1 - Household; 2 - Public Service)");
-                int typeChoice = 1;
-                switch (typeChoice)
-                {
-                    case 1:
-                        CustomerTypeList[CustomerQuantity] = CUSTOMER_TYPE_HOUSEHOLD;
-                        break;
-                    case 2:
-                        CustomerTypeList[CustomerQuantity] = CUSTOMER_TYPE_PUBLIC_SERVICE;
-                        break;
-                    default:
-                        isWrongInput = true;
-                        CustomerTypeList[CustomerQuantity] = "Please only choose the values described";
-                        break;
-                }
-                CustomerTypeList[CustomerQuantity] = Console.ReadLine();
-                Console.WriteLine("Input electricity usage of last month: ");
-                ElectricityLastMonthAmount[CustomerQuantity] = Convert.ToInt32(Console.ReadLine());
-                Console.WriteLine("Input electricity usage of this month: ");
-                ElectricityThisMonthAmount[CustomerQuantity] = Convert.ToInt32(Console.ReadLine());
-                if (ElectricityThisMonthAmount[CustomerQuantity] < ElectricityLastMonthAmount[CustomerQuantity])
-                {
-                    isWrongInput = true;
-                    Console.WriteLine("Invalid electricity usage value, default usage = 0");
-                    ElectricityThisMonthAmount[CustomerQuantity] = ElectricityLastMonthAmount[CustomerQuantity];
-                }
-                else
-                {
-                    isWrongInput = false;
-                }
+                case "HouseHold":
+                    CustomerTypeList[CustomerQuantity] = CUSTOMER_TYPE_HOUSEHOLD;
+                    break;
+                case "Public Services":
+                    CustomerTypeList[CustomerQuantity] = CUSTOMER_TYPE_PUBLIC_SERVICE;
+                    break;
+                case "Production Units":
+                    CustomerTypeList[CustomerQuantity] = "Production Units"; // For now, perhaps fix later
+                    break;
+                case "Business Services":
+                    CustomerTypeList[CustomerQuantity] = "Business Services"; // For now
+                    break;
+                default:
+                    CustomerTypeList[CustomerQuantity] = CUSTOMER_TYPE_HOUSEHOLD;
+                    break;
+            }
+            ElectricityLastMonthAmount[CustomerQuantity] = lastMonth;
+            ElectricityThisMonthAmount[CustomerQuantity] = thisMonth;
+            if (ElectricityThisMonthAmount[CustomerQuantity] < ElectricityLastMonthAmount[CustomerQuantity])
+            {
+                ElectricityThisMonthAmount[CustomerQuantity] = ElectricityLastMonthAmount[CustomerQuantity];
+                CustomerQuantity++;
+                return false; // invalid
+            }
+            else
+            {
+                CustomerQuantity++;
+                return true;
             }
         }
         /*
@@ -123,13 +115,10 @@ namespace WindowsForm
             return eValue * 2887;
         }
         /*
-         * print bill info
+         * Get bill info as string
          */
-        static void printBill(int index)
+        static public string GetBillInfo(int index)
         {
-            Console.WriteLine("--------------------------------------");
-            Console.WriteLine($"Dear Customer {CustomerNameList[index]}");
-            Console.WriteLine($"Customer Type: {CustomerTypeList[index]}");
             int ElectricityUsage = ElectricityThisMonthAmount[index] - ElectricityLastMonthAmount[index];
             int billAmount = 0;
             switch (CustomerTypeList[index])
@@ -141,20 +130,78 @@ namespace WindowsForm
                     billAmount = calculatePublicServiceBill(ElectricityUsage);
                     break;
                 default:
-                    Console.WriteLine("Invalid Customer Type");
+                    billAmount = 0;
                     break;
             }
-            //int billAmount = calculateHouseHoldBill(ElectricityUsage);
-            Console.WriteLine($"Last month's electricity meter readings: {ElectricityLastMonthAmount[index]}");
-            Console.WriteLine($"This month's electricity meter readings: {ElectricityThisMonthAmount[index]}");
-            Console.WriteLine($"Electricity Usage This Month: {ElectricityUsage} kWh");
-            Console.WriteLine("Bill has been calculated");
-            Console.WriteLine($"Electricity Bill: {billAmount.ToString("N0")} VND"); // "N0" là Nờ và số 0 - anà
             double billWithVAT = billAmount * 1.1;
-            Console.WriteLine($"Electricity Bill (Including 10% VAT): {billWithVAT.ToString("N0")} VND");
             DateTime today = DateTime.Now;
             DateTime fiveDaysLater = today.AddDays(5);
-            Console.WriteLine($"Payment Due Date: {fiveDaysLater.ToString("dd/MM/yyyy")}");
+            return $"Dear Customer {CustomerNameList[index]}\n" +
+                   $"Customer Type: {CustomerTypeList[index]}\n" +
+                   $"Last month's electricity meter readings: {ElectricityLastMonthAmount[index]}\n" +
+                   $"This month's electricity meter readings: {ElectricityThisMonthAmount[index]}\n" +
+                   $"Electricity Usage This Month: {ElectricityUsage} kWh\n" +
+                   $"Electricity Bill: {billAmount.ToString("N0")} VND\n" +
+                   $"Electricity Bill (Including 10% VAT): {billWithVAT.ToString("N0")} VND\n" +
+                   $"Payment Due Date: {fiveDaysLater.ToString("dd/MM/yyyy")}";
+        }
+
+        /*
+         * Get all customers data
+         */
+        static public List<string[]> GetAllCustomers()
+        {
+            List<string[]> customers = new List<string[]>();
+            for (int i = 0; i < CustomerQuantity; i++)
+            {
+                int usage = ElectricityThisMonthAmount[i] - ElectricityLastMonthAmount[i];
+                int billAmount = 0;
+                switch (CustomerTypeList[i])
+                {
+                    case CUSTOMER_TYPE_HOUSEHOLD:
+                        billAmount = calculateHouseHoldBill(usage);
+                        break;
+                    case CUSTOMER_TYPE_PUBLIC_SERVICE:
+                        billAmount = calculatePublicServiceBill(usage);
+                        break;
+                    default:
+                        billAmount = 0;
+                        break;
+                }
+                double billWithVAT = billAmount * 1.1;
+                customers.Add(new string[] {
+                    CustomerNameList[i],
+                    CustomerTypeList[i],
+                    ElectricityLastMonthAmount[i].ToString(),
+                    ElectricityThisMonthAmount[i].ToString(),
+                    usage.ToString(),
+                    billWithVAT.ToString("N0")
+                });
+            }
+            return customers;
+        }
+
+        /*
+         * Delete customer at index
+         */
+        static public void DeleteCustomer(int index)
+        {
+            for (int i = index; i < CustomerQuantity - 1; i++)
+            {
+                CustomerNameList[i] = CustomerNameList[i + 1];
+                CustomerTypeList[i] = CustomerTypeList[i + 1];
+                ElectricityLastMonthAmount[i] = ElectricityLastMonthAmount[i + 1];
+                ElectricityThisMonthAmount[i] = ElectricityThisMonthAmount[i + 1];
+            }
+            CustomerQuantity--;
+        }
+
+        /*
+         * Get count
+         */
+        static public int GetCustomerCount()
+        {
+            return CustomerQuantity;
         }
     }
 }

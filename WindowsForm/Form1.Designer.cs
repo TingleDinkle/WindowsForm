@@ -182,9 +182,9 @@
             btnSubmit.Text = "Submit";
             btnSubmit.UseVisualStyleBackColor = true;
             btnSubmit.Click += button1_Click;
-            // 
+            //
             // btnDelete
-            // 
+            //
             btnDelete.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
             btnDelete.Location = new Point(553, 409);
             btnDelete.Name = "btnDelete";
@@ -192,9 +192,10 @@
             btnDelete.TabIndex = 15;
             btnDelete.Text = "Delete";
             btnDelete.UseVisualStyleBackColor = true;
-            // 
+            btnDelete.Click += btnDelete_Click;
+            //
             // btnEdit
-            // 
+            //
             btnEdit.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
             btnEdit.Location = new Point(839, 409);
             btnEdit.Name = "btnEdit";
@@ -202,6 +203,7 @@
             btnEdit.TabIndex = 16;
             btnEdit.Text = "Edit";
             btnEdit.UseVisualStyleBackColor = true;
+            btnEdit.Click += btnEdit_Click;
             // 
             // lvCustomer
             // 
