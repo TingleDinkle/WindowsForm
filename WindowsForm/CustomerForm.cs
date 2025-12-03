@@ -3,8 +3,11 @@ using System.Windows.Forms;
 
 namespace WindowsForm
 {
+    // A Dialog Form used for both Creating and Editing customers.
+    // It collects input data, validates it, and exposes it via public properties for the main form to consume.
     public partial class CustomerForm : Form
     {
+        // Public properties allow the parent form to retrieve data easily without accessing UI controls directly.
         public string CustomerName { get { return txtName.Text; } }
         public string CustomerType { get { return cboType.Text; } }
         
@@ -35,6 +38,7 @@ namespace WindowsForm
             }
         }
 
+        // Constructor for "Add New Customer" mode.
         public CustomerForm()
         {
             InitializeComponent();
@@ -42,6 +46,8 @@ namespace WindowsForm
             UpdatePeopleFieldVisibility();
         }
 
+        // Constructor for "Edit Customer" mode. 
+        // Populates the fields with existing customer data.
         public CustomerForm(Customer existingCustomer) : this()
         {
             if (existingCustomer != null)
@@ -59,6 +65,7 @@ namespace WindowsForm
             }
         }
         
+        // Helper to select the correct item in the ComboBox based on the stored string.
         private void SelectTypeInCombo(string type)
         {
              // Default fallback
@@ -75,6 +82,8 @@ namespace WindowsForm
              }
         }
 
+        // Event Handler: Toggles visibility of the "Number of People" field.
+        // Only "Household" customers need this field.
         private void cboType_SelectedIndexChanged(object sender, EventArgs e)
         {
             UpdatePeopleFieldVisibility();
@@ -99,6 +108,7 @@ namespace WindowsForm
             }
         }
 
+        // Event Handler: Validates input before closing the dialog.
         private void btnSave_Click(object sender, EventArgs e)
         {
             if (string.IsNullOrWhiteSpace(txtName.Text) || string.IsNullOrWhiteSpace(cboType.Text))
