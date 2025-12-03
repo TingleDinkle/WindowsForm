@@ -1,7 +1,20 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
 namespace WindowsForm
 {
     public partial class Form1 : Form
     {
+        // Instantiate the Manager
+        private CustomerManager _customerManager = new CustomerManager();
+
         public Form1()
         {
             InitializeComponent();
@@ -43,7 +56,19 @@ namespace WindowsForm
             }
             string name = txtName.Text;
             string type = cboType.Text;
-            Customer.AddCustomer(name, type, last, thism);
+            
+            // Use the manager instance
+            bool success = _customerManager.AddCustomer(name, type, last, thism);
+            
+            if (!success)
+            {
+                 // Note: Original code didn't show an error message here if validation inside AddCustomer failed, 
+                 // but logic here in button click already checks (thism < last). 
+                 // The Manager also checks it.
+                 MessageBox.Show("Could not add customer. Please check inputs.");
+                 return;
+            }
+
             RefreshListView();
             txtName.Text = "";
             txtLastMonth.Text = "";
@@ -58,7 +83,8 @@ namespace WindowsForm
         private void RefreshListView()
         {
             lvCustomer.Items.Clear();
-            var customers = Customer.GetAllCustomers();
+            // Get data formatted for the view from the manager
+            var customers = _customerManager.GetAllCustomersForView();
             foreach (var customer in customers)
             {
                 var item = new ListViewItem(customer[0]);
@@ -78,7 +104,7 @@ namespace WindowsForm
                 return;
             }
             int index = lvCustomer.SelectedItems[0].Index;
-            Customer.DeleteCustomer(index);
+            _customerManager.DeleteCustomer(index);
             RefreshListView();
         }
 
@@ -90,11 +116,14 @@ namespace WindowsForm
                 return;
             }
             int index = lvCustomer.SelectedItems[0].Index;
-            // For now, just show bill info
-            string bill = Customer.GetBillInfo(index);
-            MessageBox.Show(bill, "Bill Information");
+            
+            // Retrieve the specific customer object to get bill info
+            Customer customer = _customerManager.GetCustomer(index);
+            if (customer != null)
+            {
+                string bill = customer.GetBillInfo();
+                MessageBox.Show(bill, "Bill Information");
+            }
         }
-
-
     }
 }
