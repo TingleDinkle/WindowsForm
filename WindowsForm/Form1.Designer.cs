@@ -1,4 +1,4 @@
-﻿namespace WindowsForm
+namespace WindowsForm
 {
     partial class Form1
     {
@@ -44,6 +44,8 @@
             btnSubmit = new Button();
             btnDelete = new Button();
             btnEdit = new Button();
+            btnExport = new Button();
+            btnUpdate = new Button();
             lvCustomer = new ListView();
             CustomerName = new ColumnHeader();
             CustomerType = new ColumnHeader();
@@ -179,7 +181,7 @@
             btnSubmit.Name = "btnSubmit";
             btnSubmit.Size = new Size(275, 29);
             btnSubmit.TabIndex = 14;
-            btnSubmit.Text = "Submit";
+            btnSubmit.Text = "Add Customer";
             btnSubmit.UseVisualStyleBackColor = true;
             btnSubmit.Click += button1_Click;
             //
@@ -188,7 +190,7 @@
             btnDelete.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
             btnDelete.Location = new Point(553, 409);
             btnDelete.Name = "btnDelete";
-            btnDelete.Size = new Size(280, 29);
+            btnDelete.Size = new Size(120, 29);
             btnDelete.TabIndex = 15;
             btnDelete.Text = "Delete";
             btnDelete.UseVisualStyleBackColor = true;
@@ -197,13 +199,36 @@
             // btnEdit
             //
             btnEdit.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            btnEdit.Location = new Point(839, 409);
+            btnEdit.Location = new Point(680, 409);
             btnEdit.Name = "btnEdit";
-            btnEdit.Size = new Size(282, 29);
+            btnEdit.Size = new Size(120, 29);
             btnEdit.TabIndex = 16;
             btnEdit.Text = "Edit";
             btnEdit.UseVisualStyleBackColor = true;
             btnEdit.Click += btnEdit_Click;
+            //
+            // btnUpdate
+            //
+            btnUpdate.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            btnUpdate.Location = new Point(807, 409);
+            btnUpdate.Name = "btnUpdate";
+            btnUpdate.Size = new Size(120, 29);
+            btnUpdate.TabIndex = 18;
+            btnUpdate.Text = "Update";
+            btnUpdate.UseVisualStyleBackColor = true;
+            btnUpdate.Click += btnUpdate_Click;
+            btnUpdate.Visible = false;
+            //
+            // btnExport
+            //
+            btnExport.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            btnExport.Location = new Point(934, 409);
+            btnExport.Name = "btnExport";
+            btnExport.Size = new Size(120, 29);
+            btnExport.TabIndex = 19;
+            btnExport.Text = "Export";
+            btnExport.UseVisualStyleBackColor = true;
+            btnExport.Click += btnExport_Click;
             // 
             // lvCustomer
             // 
@@ -257,6 +282,8 @@
             Controls.Add(btnEdit);
             Controls.Add(btnDelete);
             Controls.Add(btnSubmit);
+            Controls.Add(btnExport);
+            Controls.Add(btnUpdate);
             Controls.Add(cboType);
             Controls.Add(tbElectricityApplication);
             Controls.Add(label6);
@@ -295,6 +322,8 @@
         private Button btnSubmit;
         private Button btnDelete;
         private Button btnEdit;
+        private Button btnExport;
+        private Button btnUpdate;
         private ListView lvCustomer;
         private ColumnHeader CustomerName;
         private ColumnHeader CustomerType;

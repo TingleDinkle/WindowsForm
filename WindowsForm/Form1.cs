@@ -12,8 +12,8 @@ namespace WindowsForm
 {
     public partial class Form1 : Form
     {
-        // Instantiate the Manager
         private CustomerManager _customerManager = new CustomerManager();
+        private int _editingIndex = -1; // To track which item we are editing
 
         public Form1()
         {
@@ -32,58 +32,136 @@ namespace WindowsForm
 
         private void button1_Click(object sender, EventArgs e)
         {
-            if (string.IsNullOrEmpty(txtName.Text) || string.IsNullOrEmpty(txtLastMonth.Text) || string.IsNullOrEmpty(txtThisMonth.Text))
-            {
-                MessageBox.Show("Please fill all fields");
-                return;
-            }
-            int last;
-            if (!int.TryParse(txtLastMonth.Text, out last))
-            {
-                MessageBox.Show("Invalid last month number");
-                return;
-            }
-            int thism;
-            if (!int.TryParse(txtThisMonth.Text, out thism))
-            {
-                MessageBox.Show("Invalid this month number");
-                return;
-            }
-            if (thism < last)
-            {
-                MessageBox.Show("This month cannot be less than last month");
-                return;
-            }
-            string name = txtName.Text;
-            string type = cboType.Text;
-            
-            // Use the manager instance
+            // "Add" Button Logic
+            if (!ValidateInputs(out string name, out string type, out int last, out int thism)) return;
+
             bool success = _customerManager.AddCustomer(name, type, last, thism);
             
             if (!success)
             {
-                 // Note: Original code didn't show an error message here if validation inside AddCustomer failed, 
-                 // but logic here in button click already checks (thism < last). 
-                 // The Manager also checks it.
-                 MessageBox.Show("Could not add customer. Please check inputs.");
+                 MessageBox.Show("Could not add customer. Check if 'This Month' is less than 'Last Month'.");
                  return;
             }
 
+            ClearInputs();
             RefreshListView();
-            txtName.Text = "";
-            txtLastMonth.Text = "";
-            txtThisMonth.Text = "";
+        }
+
+        private void btnUpdate_Click(object sender, EventArgs e)
+        {
+            // "Update" Button Logic
+            if (_editingIndex == -1) return;
+
+            if (!ValidateInputs(out string name, out string type, out int last, out int thism)) return;
+
+            bool success = _customerManager.UpdateCustomer(_editingIndex, name, type, last, thism);
+            if (success)
+            {
+                MessageBox.Show("Customer updated successfully.");
+                ClearInputs();
+                RefreshListView();
+                
+                // Reset UI state
+                btnSubmit.Enabled = true;
+                btnUpdate.Visible = false;
+                _editingIndex = -1;
+            }
+            else
+            {
+                MessageBox.Show("Failed to update. Please check inputs.");
+            }
+        }
+
+        private void btnEdit_Click(object sender, EventArgs e)
+        {
+            if (lvCustomer.SelectedItems.Count == 0)
+            {
+                MessageBox.Show("Please select a customer to edit");
+                return;
+            }
+            
+            _editingIndex = lvCustomer.SelectedItems[0].Index;
+            Customer c = _customerManager.GetCustomer(_editingIndex);
+            
+            if (c != null)
+            {
+                // Populate fields
+                txtName.Text = c.Name;
+                // Handle type selection safely
+                if (cboType.Items.Contains(c.CustomerType))
+                {
+                    cboType.SelectedItem = c.CustomerType;
+                }
+                else
+                {
+                    cboType.Text = c.CustomerType; 
+                }
+                
+                txtLastMonth.Text = c.LastMonthReading.ToString();
+                txtThisMonth.Text = c.ThisMonthReading.ToString();
+
+                // Switch UI to Edit Mode
+                btnSubmit.Enabled = false;
+                btnUpdate.Visible = true;
+            }
+        }
+
+        private void btnDelete_Click(object sender, EventArgs e)
+        {
+            if (lvCustomer.SelectedItems.Count == 0)
+            {
+                MessageBox.Show("Please select a customer to delete");
+                return;
+            }
+            int index = lvCustomer.SelectedItems[0].Index;
+            
+            if (MessageBox.Show("Are you sure you want to delete this customer?", "Confirm Delete", MessageBoxButtons.YesNo) == DialogResult.Yes)
+            {
+                 _customerManager.DeleteCustomer(index);
+                 
+                 // If we were editing this specific item, cancel edit mode
+                 if (_editingIndex == index)
+                 {
+                     ClearInputs();
+                     btnSubmit.Enabled = true;
+                     btnUpdate.Visible = false;
+                     _editingIndex = -1;
+                 }
+                 
+                 RefreshListView();
+            }
+        }
+        
+        private void btnExport_Click(object sender, EventArgs e)
+        {
+            SaveFileDialog saveFileDialog = new SaveFileDialog();
+            saveFileDialog.Filter = "CSV File|*.csv|Text File|*.txt";
+            saveFileDialog.Title = "Export Customer Data";
+            saveFileDialog.FileName = "customers.csv";
+
+            if (saveFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                try 
+                {
+                    _customerManager.ExportToCsv(saveFileDialog.FileName);
+                    MessageBox.Show("Data exported successfully!");
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error exporting data: {ex.Message}");
+                }
+            }
         }
 
         private void Form1_Load(object sender, EventArgs e)
         {
+            _customerManager.LoadFromFile();
             RefreshListView();
         }
 
         private void RefreshListView()
         {
             lvCustomer.Items.Clear();
-            // Get data formatted for the view from the manager
             var customers = _customerManager.GetAllCustomersForView();
             foreach (var customer in customers)
             {
@@ -96,34 +174,39 @@ namespace WindowsForm
             }
         }
 
-        private void btnDelete_Click(object sender, EventArgs e)
+        private void ClearInputs()
         {
-            if (lvCustomer.SelectedItems.Count == 0)
-            {
-                MessageBox.Show("Please select a customer to delete");
-                return;
-            }
-            int index = lvCustomer.SelectedItems[0].Index;
-            _customerManager.DeleteCustomer(index);
-            RefreshListView();
+            txtName.Text = "";
+            txtLastMonth.Text = "";
+            txtThisMonth.Text = "";
+            cboType.SelectedIndex = -1;
         }
 
-        private void btnEdit_Click(object sender, EventArgs e)
+        private bool ValidateInputs(out string name, out string type, out int last, out int thism)
         {
-            if (lvCustomer.SelectedItems.Count == 0)
+            name = txtName.Text;
+            type = cboType.Text;
+            last = 0;
+            thism = 0;
+
+            if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(type) || string.IsNullOrEmpty(txtLastMonth.Text) || string.IsNullOrEmpty(txtThisMonth.Text))
             {
-                MessageBox.Show("Please select a customer to edit");
-                return;
+                MessageBox.Show("Please fill all fields");
+                return false;
             }
-            int index = lvCustomer.SelectedItems[0].Index;
             
-            // Retrieve the specific customer object to get bill info
-            Customer customer = _customerManager.GetCustomer(index);
-            if (customer != null)
+            if (!int.TryParse(txtLastMonth.Text, out last))
             {
-                string bill = customer.GetBillInfo();
-                MessageBox.Show(bill, "Bill Information");
+                MessageBox.Show("Invalid last month number");
+                return false;
             }
+            
+            if (!int.TryParse(txtThisMonth.Text, out thism))
+            {
+                MessageBox.Show("Invalid this month number");
+                return false;
+            }
+            return true;
         }
     }
 }
