@@ -10,7 +10,12 @@ namespace WindowsForm
         {
             ApplicationConfiguration.Initialize();
 
-            // Show Login Form first
+            // Startup Sequence:
+            // 1. Show the Login Form modally.
+            // 2. Wait for the user to log in.
+            // 3. If login is successful (DialogResult.OK), launch the main Form1.
+            // 4. Otherwise, exit the application.
+            
             LoginForm login = new LoginForm();
             if (login.ShowDialog() == DialogResult.OK)
             {
@@ -19,7 +24,7 @@ namespace WindowsForm
             }
             else
             {
-                // Exit application
+                // User cancelled or failed login -> Exit application
                 Application.Exit();
             }
         }

@@ -4,14 +4,16 @@ using System.Linq;
 
 namespace WindowsForm
 {
-    // Abstract base class representing a generic Customer
+    // Abstract base class representing a generic Customer.
+    // This acts as the 'Model' in the architecture, encapsulating data and business logic.
     public abstract class Customer
     {
-        // Encapsulated state
+        // Encapsulated state for customer details and meter readings.
         public string Name { get; private set; }
         public int LastMonthReading { get; private set; }
         public int ThisMonthReading { get; private set; }
 
+        // Protected constructor forces creation through specific subclasses.
         protected Customer(string name, int lastMonth, int thisMonth)
         {
             ValidateReadings(lastMonth, thisMonth);
@@ -20,7 +22,7 @@ namespace WindowsForm
             ThisMonthReading = thisMonth;
         }
 
-        // Business rule validation encapsulated in the domain entity
+        // Centralized validation logic ensures data integrity across all customer types.
         private void ValidateReadings(int last, int thisMonth)
         {
             if (last < 0 || thisMonth < 0)
@@ -33,7 +35,7 @@ namespace WindowsForm
             }
         }
 
-        // Method to update state with validation
+        // Updates reading data, re-applying validation rules.
         public void UpdateReadings(int lastMonth, int thisMonth)
         {
             ValidateReadings(lastMonth, thisMonth);
@@ -41,6 +43,7 @@ namespace WindowsForm
             ThisMonthReading = thisMonth;
         }
 
+        // Updates the customer name with basic validation.
         public void UpdateName(string name)
         {
             if (string.IsNullOrWhiteSpace(name))
@@ -48,18 +51,23 @@ namespace WindowsForm
             Name = name;
         }
 
+        // Calculated property for water consumption.
         public int Usage => ThisMonthReading - LastMonthReading;
 
+        // Abstract property to be implemented by subclasses to identify their specific type.
         public abstract string CustomerType { get; }
 
-        // Returns the Bill Amount + Environment Fee (before VAT)
+        // Abstract method: Each subclass MUST define its own pricing formula.
+        // Returns the Bill Amount + Environment Fee (before VAT).
         public abstract decimal CalculateBill();
 
+        // Standard VAT calculation (10%) applied to all customers.
         public decimal CalculateBillWithVAT()
         {
             return CalculateBill() * 1.1m;
         }
         
+        // Generates a formatted bill summary string.
         public virtual string GetBillInfo()
         {
             decimal billAmount = CalculateBill(); 
@@ -78,7 +86,7 @@ namespace WindowsForm
         }
     }
 
-    // Concrete class for Household customers
+    // Concrete class for Household customers with Tiered Pricing logic.
     public class HouseholdCustomer : Customer
     {
         public int PeopleCount { get; private set; }
@@ -86,7 +94,6 @@ namespace WindowsForm
         public HouseholdCustomer(string name, int lastMonth, int thisMonth, int peopleCount) 
             : base(name, lastMonth, thisMonth) 
         {
-            // Validation from WaterCalc: if (PeopleCountList[CustomerQuantity] <= 0) ...
             if (peopleCount <= 0) throw new ArgumentException("Household must have at least 1 person.");
             PeopleCount = peopleCount;
         }
@@ -99,22 +106,26 @@ namespace WindowsForm
 
         public override string CustomerType => "Household";
 
+        // Calculates bill using tiered pricing based on usage PER PERSON.
         public override decimal CalculateBill()
         {
             int wValue = Usage;
             int people = PeopleCount;
             
+            // Pricing constants for each tier
             const double PRICE_T1 = 5973,
                          PRICE_T2 = 7052,
                          PRICE_T3 = 8699,
                          PRICE_T4 = 15929;
             
+            // Calculate usage thresholds based on number of people
             int tier1 = 10 * people;
             int tier2 = 20 * people;
             int tier3 = 30 * people;
             
             double billAmount = 0;
 
+            // Determine which tier the usage falls into and calculate cumulatively
             if (wValue <= tier1)
             {
                 billAmount = wValue * PRICE_T1;
@@ -135,8 +146,8 @@ namespace WindowsForm
                             + tier1 * PRICE_T1 + (tier2 - tier1) * PRICE_T2 + (tier3 - tier2) * PRICE_T3;
             }
 
+            // Add 10% Environment Fee
             double envFee = billAmount * 0.10;
-            // Cast to int as per original code logic: return (int)totalWithEnv;
             return (decimal)((int)(billAmount + envFee));
         }
         
@@ -146,7 +157,7 @@ namespace WindowsForm
         }
     }
 
-    // Concrete class for Administrative Agency
+    // Concrete class for Administrative Agencies (Flat Rate).
     public class AdminCustomer : Customer
     {
         public AdminCustomer(string name, int lastMonth, int thisMonth) 
@@ -162,7 +173,7 @@ namespace WindowsForm
         }
     }
 
-    // Concrete class for Production Units
+    // Concrete class for Production Units (Flat Rate).
     public class ProductionCustomer : Customer
     {
         public ProductionCustomer(string name, int lastMonth, int thisMonth) 
@@ -178,7 +189,7 @@ namespace WindowsForm
         }
     }
 
-    // Concrete class for Business Services
+    // Concrete class for Business Services (Flat Rate).
     public class BusinessCustomer : Customer
     {
         public BusinessCustomer(string name, int lastMonth, int thisMonth) 

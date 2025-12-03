@@ -3,6 +3,8 @@ using System.Windows.Forms;
 
 namespace WindowsForm
 {
+    // Simple Authentication Form.
+    // Acts as a gatekeeper before the main application is loaded.
     public partial class LoginForm : Form
     {
         public LoginForm()
@@ -10,13 +12,14 @@ namespace WindowsForm
             InitializeComponent();
         }
 
+        // Event Handler: Validates credentials.
         private void btnLogin_Click(object sender, EventArgs e)
         {
             string user = txtUser.Text;
             string pass = txtPass.Text;
 
-            // Hardcoded credentials for demonstration
-            // In a real app, this would check a database
+            // Hardcoded credentials for demonstration purposes.
+            // In a production environment, this should validate against a secure database or identity service.
             if (user == "admin" && pass == "admin")
             {
                 this.DialogResult = DialogResult.OK;
@@ -28,6 +31,7 @@ namespace WindowsForm
             }
         }
 
+        // Event Handler: Closes the application if the user cancels.
         private void btnExit_Click(object sender, EventArgs e)
         {
             this.DialogResult = DialogResult.Cancel;

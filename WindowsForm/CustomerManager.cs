@@ -4,17 +4,21 @@ using System.Linq;
 
 namespace WindowsForm
 {
+    // The 'Controller' or 'Presenter' of the application.
+    // Orchestrates the flow of data between the Repository and the View (Forms).
     public class CustomerManager
     {
         private List<Customer> _customers;
         private readonly ICustomerRepository _repository;
 
+        // Dependency Injection: The repository is injected, allowing for easy testing or swapping of storage methods.
         public CustomerManager(ICustomerRepository repository)
         {
             _repository = repository;
             _customers = new List<Customer>();
         }
 
+        // Loads data from the repository and reconstructs the domain objects using the Factory.
         public void LoadData()
         {
              var dtos = _repository.Load();
@@ -28,6 +32,7 @@ namespace WindowsForm
              }
         }
 
+        // Adds a new customer and persists the change.
         public bool AddCustomer(string name, string type, int lastMonth, int thisMonth, int peopleCount = 0)
         {
             try 
@@ -48,6 +53,7 @@ namespace WindowsForm
             }
         }
 
+        // Updates an existing customer. Handles type changes (e.g., Household -> Admin) by creating a new object.
         public bool UpdateCustomer(int index, string name, string type, int lastMonth, int thisMonth, int peopleCount = 0)
         {
              if (index < 0 || index >= _customers.Count) return false;
@@ -59,13 +65,13 @@ namespace WindowsForm
                  // Check if type changed or if it is household we might need to update people count
                  if (!IsSameType(existing.CustomerType, type))
                  {
-                     // Replace with new type
+                     // Type changed: Must create a new object because the class type is different
                      Customer newCustomer = CreateCustomerFactory(name, type, lastMonth, thisMonth, peopleCount);
                      _customers[index] = newCustomer;
                  }
                  else
                  {
-                     // Update existing object
+                     // Type is same: Just update the properties
                      existing.UpdateName(name);
                      existing.UpdateReadings(lastMonth, thisMonth);
                      
@@ -92,6 +98,7 @@ namespace WindowsForm
             return t1 == t2;
         }
 
+        // Helper to map various string inputs to standard keys.
         private string NormalizeType(string type)
         {
              if (string.IsNullOrEmpty(type)) return "";
@@ -105,6 +112,7 @@ namespace WindowsForm
              return lower;
         }
 
+        // Factory Method: Encapsulates the logic for instantiating the correct Customer subclass.
         private Customer CreateCustomerFactory(string name, string type, int lastMonth, int thisMonth, int peopleCount)
         {
             string normalized = NormalizeType(type);
@@ -147,6 +155,7 @@ namespace WindowsForm
             return _customers;
         }
 
+        // Prepares data specifically for the UI View (e.g., string arrays for ListView).
         public List<string[]> GetAllCustomersForView()
         {
             List<string[]> viewData = new List<string[]>();

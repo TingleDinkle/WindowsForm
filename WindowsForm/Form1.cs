@@ -11,6 +11,9 @@ using System.IO;
 
 namespace WindowsForm
 {
+    // The Main Application Window (View).
+    // Responsible for displaying the customer list and handling user actions (Add, Edit, Delete).
+    // It acts as a dumb view, delegating all business logic to the CustomerManager.
     public partial class Form1 : Form
     {
         private CustomerManager _customerManager;
@@ -19,22 +22,26 @@ namespace WindowsForm
         public Form1()
         {
             InitializeComponent();
+            // Composition Root: Instantiating the specific Repository and injecting it into the Manager.
             ICustomerRepository repository = new JsonCustomerRepository();
             _customerManager = new CustomerManager(repository);
         }
 
+        // Event Handler: Called when the form first loads.
         private void Form1_Load(object sender, EventArgs e)
         {
             _customerManager.LoadData();
             RefreshListView();
         }
 
+        // Event Handler: Opens the 'Add Customer' dialog.
         private void button1_Click(object sender, EventArgs e)
         {
             using (var form = new CustomerForm())
             {
                 if (form.ShowDialog() == DialogResult.OK)
                 {
+                    // Pass the validated data from the dialog to the Manager
                     bool success = _customerManager.AddCustomer(
                         form.CustomerName, 
                         form.CustomerType, 
@@ -49,6 +56,7 @@ namespace WindowsForm
             }
         }
 
+        // Event Handler: Edits the selected customer.
         private void btnEdit_Click(object sender, EventArgs e)
         {
             if (lvCustomer.SelectedItems.Count == 0)
@@ -78,6 +86,7 @@ namespace WindowsForm
             Customer existing = _customerManager.GetCustomer(index);
             if(existing == null) return;
 
+            // Pre-fill the form with existing data
             using (var form = new CustomerForm(existing))
             {
                 if (form.ShowDialog() == DialogResult.OK)
@@ -97,6 +106,7 @@ namespace WindowsForm
             }
         }
 
+        // Event Handler: Deletes the selected customer.
         private void btnDelete_Click(object sender, EventArgs e)
         {
             if (lvCustomer.SelectedItems.Count == 0)
@@ -113,6 +123,7 @@ namespace WindowsForm
             }
         }
         
+        // Event Handler: Exports data to CSV.
         private void btnExport_Click(object sender, EventArgs e)
         {
             SaveFileDialog saveFileDialog = new SaveFileDialog();
@@ -134,6 +145,7 @@ namespace WindowsForm
             }
         }
 
+        // Event Handler: Filters the list by name.
         private void btnSearch_Click(object sender, EventArgs e)
         {
             string keyword = txtSearch.Text.Trim();
@@ -152,12 +164,14 @@ namespace WindowsForm
             DisplayCustomers(results);
         }
 
+        // Event Handler: Sorts the list by Name.
         private void btnSortName_Click(object sender, EventArgs e)
         {
             _customerManager.SortByName(); // This reorders the actual internal list
             RefreshListView(); // So indices are still valid 1:1
         }
 
+        // Event Handler: Generates and saves a text invoice for the selected user.
         private void btnInvoice_Click(object sender, EventArgs e)
         {
             if (lvCustomer.SelectedItems.Count == 0)
@@ -197,12 +211,14 @@ namespace WindowsForm
             }
         }
 
+        // Helper: Reloads the entire list from the manager into the UI.
         private void RefreshListView()
         {
             var all = _customerManager.GetAllCustomers();
             DisplayCustomers(all);
         }
 
+        // Helper: Renders a specific list of customers to the ListView.
         private void DisplayCustomers(List<Customer> customers)
         {
             lvCustomer.Items.Clear();
