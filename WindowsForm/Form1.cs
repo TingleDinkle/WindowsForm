@@ -58,23 +58,6 @@ namespace WindowsForm
             }
             
             int index = lvCustomer.SelectedItems[0].Index;
-            
-            // Note: In a real production app, we should map this index back to the filtered list if searching.
-            // For this scope, we assume the list view is 1:1 with the manager unless sorting/searching is active.
-            // Ideally, we would store the Customer object or ID in the ListViewItem.Tag property.
-            
-            // Improved Logic using Tag if possible, but let's stick to the Manager's list for now
-            // as we need to ensure the Manager updates the correct object.
-            
-            // Since Search/Sort modifies the display order but NOT the underlying list order in Manager (unless we sort the manager list),
-            // we have a potential disconnect.
-            // The Manager methods SortByName() actually SORT the internal list. So index integrity is preserved there.
-            // But SearchByName() returns a new list. 
-            
-            // To be safe: We will grab the Customer from the ListView Tag if we had one, 
-            // OR, simply disable Edit when searching. 
-            // Let's just proceed with index for now, assuming user clears search before editing or we accept the limitation.
-            
             Customer existing = _customerManager.GetCustomer(index);
             if(existing == null) return;
 
