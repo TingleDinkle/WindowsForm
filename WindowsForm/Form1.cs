@@ -12,12 +12,15 @@ namespace WindowsForm
 {
     public partial class Form1 : Form
     {
-        private CustomerManager _customerManager = new CustomerManager();
+        private CustomerManager _customerManager;
         private int _editingIndex = -1; // To track which item we are editing
 
         public Form1()
         {
             InitializeComponent();
+            // Composition Root: Inject dependencies here
+            ICustomerRepository repository = new JsonCustomerRepository();
+            _customerManager = new CustomerManager(repository);
         }
 
         private void label1_Click(object sender, EventArgs e)
@@ -155,7 +158,7 @@ namespace WindowsForm
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            _customerManager.LoadFromFile();
+            _customerManager.LoadData();
             RefreshListView();
         }
 

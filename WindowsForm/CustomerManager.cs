@@ -1,75 +1,111 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Linq;
 
 namespace WindowsForm
 {
     public class CustomerManager
     {
-        private List<Customer> _customers = new List<Customer>();
+        private List<Customer> _customers;
+        private readonly ICustomerRepository _repository;
 
-        // Helper class for JSON serialization since abstract classes can be tricky 
-        // without polymorphic configuration in simpler JSON scenarios.
-        // We'll use a DTO (Data Transfer Object) approach for simplicity and robustness.
-        private class CustomerDto
+        // Dependency Injection: The manager depends on an abstraction (interface), not concrete file IO.
+        public CustomerManager(ICustomerRepository repository)
         {
-            public string Name { get; set; }
-            public string Type { get; set; }
-            public int LastMonth { get; set; }
-            public int ThisMonth { get; set; }
+            _repository = repository;
+            _customers = new List<Customer>();
+        }
+
+        public void LoadData()
+        {
+             var dtos = _repository.Load();
+             _customers.Clear();
+             foreach (var dto in dtos)
+             {
+                 try {
+                    Customer c = CreateCustomerFactory(dto.Name, dto.Type, dto.LastMonth, dto.ThisMonth);
+                    if (c != null) _customers.Add(c);
+                 } catch { /* Skip invalid data */ }
+             }
         }
 
         public bool AddCustomer(string name, string type, int lastMonth, int thisMonth)
         {
-            if (thisMonth < lastMonth)
+            try 
+            {
+                // Domain factory
+                Customer newCustomer = CreateCustomerFactory(name, type, lastMonth, thisMonth);
+                
+                if (newCustomer != null)
+                {
+                    _customers.Add(newCustomer);
+                    _repository.Save(_customers);
+                    return true;
+                }
+                return false;
+            }
+            catch (Exception)
             {
                 return false;
             }
-
-            Customer newCustomer = CreateCustomerFactory(name, type, lastMonth, thisMonth);
-
-            if (newCustomer != null)
-            {
-                _customers.Add(newCustomer);
-                SaveToFile(); // Auto-save
-                return true;
-            }
-            return false;
         }
 
         public bool UpdateCustomer(int index, string name, string type, int lastMonth, int thisMonth)
         {
              if (index < 0 || index >= _customers.Count) return false;
-             if (thisMonth < lastMonth) return false;
 
-             Customer updatedCustomer = CreateCustomerFactory(name, type, lastMonth, thisMonth);
-             if (updatedCustomer != null)
+             try
              {
-                 _customers[index] = updatedCustomer;
-                 SaveToFile(); // Auto-save
+                 // Check if type changed. If so, we need a new object.
+                 Customer existing = _customers[index];
+                 
+                 // Normalize type strings for comparison
+                 if (!IsSameType(existing.CustomerType, type))
+                 {
+                     // Replace with new type
+                     Customer newCustomer = CreateCustomerFactory(name, type, lastMonth, thisMonth);
+                     _customers[index] = newCustomer;
+                 }
+                 else
+                 {
+                     // Update existing object
+                     existing.UpdateName(name);
+                     existing.UpdateReadings(lastMonth, thisMonth);
+                 }
+
+                 _repository.Save(_customers);
                  return true;
              }
-             return false;
+             catch (Exception)
+             {
+                 return false;
+             }
+        }
+        
+        private bool IsSameType(string type1, string type2)
+        {
+            // Simple normalization for comparison
+            return type1.Replace(" ", "").Equals(type2.Replace(" ", ""), StringComparison.OrdinalIgnoreCase);
         }
 
         private Customer CreateCustomerFactory(string name, string type, int lastMonth, int thisMonth)
         {
-            switch (type)
+            // Simple normalization
+            string normalizedType = type.Replace(" ", "").ToLower();
+
+            switch (normalizedType)
             {
-                case "HouseHold":
-                case "Household":
+                case "household":
                     return new HouseholdCustomer(name, lastMonth, thisMonth);
-                case "Public Services":
-                case "Public Service":
+                case "publicservices":
+                case "publicservice":
                     return new PublicServiceCustomer(name, lastMonth, thisMonth);
-                case "Production Units":
+                case "productionunits":
                     return new ProductionUnitCustomer(name, lastMonth, thisMonth);
-                case "Business Services":
+                case "businessservices":
                     return new BusinessServiceCustomer(name, lastMonth, thisMonth);
                 default:
+                    // Fallback or throw
                     return new HouseholdCustomer(name, lastMonth, thisMonth);
             }
         }
@@ -79,7 +115,7 @@ namespace WindowsForm
             if (index >= 0 && index < _customers.Count)
             {
                 _customers.RemoveAt(index);
-                SaveToFile(); // Auto-save
+                _repository.Save(_customers);
             }
         }
 
@@ -94,7 +130,7 @@ namespace WindowsForm
 
         public List<Customer> GetAllCustomers()
         {
-            return _customers;
+            return _customers; // Return reference or clone depending on strictness. Reference is fine here.
         }
 
         public List<string[]> GetAllCustomersForView()
@@ -119,76 +155,9 @@ namespace WindowsForm
             return _customers.Count;
         }
 
-        // Persistence Logic
-        private const string DATA_FILE = "customers.json";
-
-        public void SaveToFile()
-        {
-            try
-            {
-                var dtos = _customers.Select(c => new CustomerDto
-                {
-                    Name = c.Name,
-                    Type = c.CustomerType,
-                    LastMonth = c.LastMonthReading,
-                    ThisMonth = c.ThisMonthReading
-                }).ToList();
-
-                string jsonString = JsonSerializer.Serialize(dtos);
-                File.WriteAllText(DATA_FILE, jsonString);
-            }
-            catch (Exception ex)
-            {
-                // In a real app, log this. For now, we swallow or let UI handle explicit save errors.
-                Console.WriteLine("Error saving file: " + ex.Message);
-            }
-        }
-
-        public void LoadFromFile()
-        {
-            if (!File.Exists(DATA_FILE)) return;
-
-            try
-            {
-                string jsonString = File.ReadAllText(DATA_FILE);
-                var dtos = JsonSerializer.Deserialize<List<CustomerDto>>(jsonString);
-                
-                _customers.Clear();
-                if (dtos != null)
-                {
-                    foreach (var dto in dtos)
-                    {
-                        AddCustomer(dto.Name, dto.Type, dto.LastMonth, dto.ThisMonth);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                 Console.WriteLine("Error loading file: " + ex.Message);
-            }
-        }
-
-        // Export Logic
         public void ExportToCsv(string filePath)
         {
-            var lines = new List<string>();
-            lines.Add("Name,Type,LastMonth,ThisMonth,Usage,BillWithVAT");
-            
-            foreach (var c in _customers)
-            {
-                lines.Add($"{EscapeCsv(c.Name)},{EscapeCsv(c.CustomerType)},{c.LastMonthReading},{c.ThisMonthReading},{c.Usage},{c.CalculateBillWithVAT()}");
-            }
-
-            File.WriteAllLines(filePath, lines);
-        }
-
-        private string EscapeCsv(string field)
-        {
-            if (field.Contains(",") || field.Contains("\"") || field.Contains("\n"))
-            {
-                return $"\"{field.Replace("\"", "\"\"")}\"";
-            }
-            return field;
+            _repository.ExportToCsv(_customers, filePath);
         }
     }
 }

@@ -6,15 +6,45 @@ namespace WindowsForm
     // Abstract base class representing a generic Customer
     public abstract class Customer
     {
-        public string Name { get; set; }
-        public int LastMonthReading { get; set; }
-        public int ThisMonthReading { get; set; }
+        // Encapsulated state
+        public string Name { get; private set; }
+        public int LastMonthReading { get; private set; }
+        public int ThisMonthReading { get; private set; }
 
-        public Customer(string name, int lastMonth, int thisMonth)
+        protected Customer(string name, int lastMonth, int thisMonth)
         {
+            ValidateReadings(lastMonth, thisMonth);
             Name = name;
             LastMonthReading = lastMonth;
             ThisMonthReading = thisMonth;
+        }
+
+        // Business rule validation encapsulated in the domain entity
+        private void ValidateReadings(int last, int thisMonth)
+        {
+            if (last < 0 || thisMonth < 0)
+            {
+                throw new ArgumentException("Readings cannot be negative.");
+            }
+            if (thisMonth < last)
+            {
+                throw new ArgumentException("This month's reading cannot be less than last month's reading.");
+            }
+        }
+
+        // Method to update state with validation
+        public void UpdateReadings(int lastMonth, int thisMonth)
+        {
+            ValidateReadings(lastMonth, thisMonth);
+            LastMonthReading = lastMonth;
+            ThisMonthReading = thisMonth;
+        }
+
+        public void UpdateName(string name)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+                throw new ArgumentException("Name cannot be empty.");
+            Name = name;
         }
 
         public int Usage => ThisMonthReading - LastMonthReading;
@@ -112,7 +142,7 @@ namespace WindowsForm
         }
     }
 
-    // Concrete class for Production Units (currently placeholder logic)
+    // Concrete class for Production Units
     public class ProductionUnitCustomer : Customer
     {
         public ProductionUnitCustomer(string name, int lastMonth, int thisMonth) 
@@ -126,7 +156,7 @@ namespace WindowsForm
         }
     }
 
-    // Concrete class for Business Services (currently placeholder logic)
+    // Concrete class for Business Services
     public class BusinessServiceCustomer : Customer
     {
         public BusinessServiceCustomer(string name, int lastMonth, int thisMonth) 
