@@ -38,7 +38,7 @@ namespace WindowsForm
         public CustomerForm()
         {
             InitializeComponent();
-            cboType.SelectedIndex = 0; // Default to Household
+            cboType.SelectedIndex = 0; 
             UpdatePeopleFieldVisibility();
         }
 
@@ -47,9 +47,6 @@ namespace WindowsForm
             if (existingCustomer != null)
             {
                 txtName.Text = existingCustomer.Name;
-                
-                // Map complex type names to simple Combo box items if needed, or ensure exact match
-                // The Manager NormalizeType helps, but UI needs to match "Household", "Administrative Agency" etc.
                 SelectTypeInCombo(existingCustomer.CustomerType);
                 
                 txtLastMonth.Text = existingCustomer.LastMonthReading.ToString();
@@ -64,11 +61,13 @@ namespace WindowsForm
         
         private void SelectTypeInCombo(string type)
         {
+             // Default fallback
+             cboType.SelectedIndex = 0;
+
              for(int i=0; i<cboType.Items.Count; i++)
              {
-                 string item = cboType.Items[i].ToString();
-                 // Check for partial matches because "Administrative Agency" vs "Administrative Agency / Public Service"
-                 if (type.Contains(item) || item.Contains(type))
+                 string? item = cboType.Items[i]?.ToString();
+                 if (item != null && (type.Contains(item) || item.Contains(type)))
                  {
                      cboType.SelectedIndex = i;
                      return;
@@ -84,7 +83,8 @@ namespace WindowsForm
         private void UpdatePeopleFieldVisibility()
         {
             string selected = cboType.Text;
-            if (selected == "Household")
+            // Check for "Household" robustly
+            if (selected.Contains("Household"))
             {
                 txtPeopleCount.Enabled = true;
                 txtPeopleCount.Visible = true;
@@ -114,15 +114,16 @@ namespace WindowsForm
                 this.DialogResult = DialogResult.None;
                 return;
             }
-
+            
+            // Logic from WaterCalc: if (WaterThisMonthAmount < WaterLastMonthAmount) ... Invalid
             if (current < last)
             {
-                MessageBox.Show("This Month cannot be less than Last Month.");
+                MessageBox.Show("This Month reading cannot be less than Last Month reading.");
                 this.DialogResult = DialogResult.None;
                 return;
             }
             
-            if (cboType.Text == "Household")
+            if (cboType.Text.Contains("Household"))
             {
                  if (!int.TryParse(txtPeopleCount.Text, out int people) || people <= 0)
                  {

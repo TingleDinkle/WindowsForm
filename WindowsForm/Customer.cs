@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace WindowsForm
 {
@@ -51,6 +52,7 @@ namespace WindowsForm
 
         public abstract string CustomerType { get; }
 
+        // Returns the Bill Amount + Environment Fee (before VAT)
         public abstract decimal CalculateBill();
 
         public decimal CalculateBillWithVAT()
@@ -58,25 +60,10 @@ namespace WindowsForm
             return CalculateBill() * 1.1m;
         }
         
-        public decimal CalculateEnvFee()
-        {
-            return CalculateBill() * 0.10m;
-        }
-
-        // Updated to match the WaterCalc logic (Bill + EnvFee + VAT on Total?)
-        // Wait, looking at the provided code:
-        // HouseHold: (Bill + Bill*0.10) cast to int -> This is Total. Then printBill says "Bill (Including 10% VAT): billAmount * 1.1".
-        // The provided CLI code has a slight logical weirdness:
-        // calculateHouseholdBill returns `(int)totalWithEnv` where totalWithEnv = bill + 10% env.
-        // THEN printBill takes that result and multiplies by 1.1 for VAT.
-        // So final is (Bill + Env) * 1.1.
-        // Admin/Production/Business: calculate...Bill returns (base + env).
-        // So consistency is maintained: CalculateBill() in this class should return (Base + EnvFee).
-        
         public virtual string GetBillInfo()
         {
-            decimal billAmount = CalculateBill(); // This includes EnvFee based on your CLI code
-            decimal billWithVAT = billAmount * 1.1m;
+            decimal billAmount = CalculateBill(); 
+            decimal billWithVAT = CalculateBillWithVAT();
             DateTime today = DateTime.Now;
             DateTime fiveDaysLater = today.AddDays(5);
 
@@ -99,6 +86,7 @@ namespace WindowsForm
         public HouseholdCustomer(string name, int lastMonth, int thisMonth, int peopleCount) 
             : base(name, lastMonth, thisMonth) 
         {
+            // Validation from WaterCalc: if (PeopleCountList[CustomerQuantity] <= 0) ...
             if (peopleCount <= 0) throw new ArgumentException("Household must have at least 1 person.");
             PeopleCount = peopleCount;
         }
@@ -148,7 +136,8 @@ namespace WindowsForm
             }
 
             double envFee = billAmount * 0.10;
-            return (decimal)(billAmount + envFee);
+            // Cast to int as per original code logic: return (int)totalWithEnv;
+            return (decimal)((int)(billAmount + envFee));
         }
         
         public override string GetBillInfo()
@@ -169,7 +158,7 @@ namespace WindowsForm
         {
             double basePrice = Usage * 9955;
             double envFee = basePrice * 0.10;
-            return (decimal)(basePrice + envFee);
+            return (decimal)((int)(basePrice + envFee));
         }
     }
 
@@ -185,7 +174,7 @@ namespace WindowsForm
         {
             double basePrice = Usage * 11615;
             double envFee = basePrice * 0.10;
-            return (decimal)(basePrice + envFee);
+            return (decimal)((int)(basePrice + envFee));
         }
     }
 
@@ -201,7 +190,7 @@ namespace WindowsForm
         {
             double basePrice = Usage * 22068;
             double envFee = basePrice * 0.10;
-            return (decimal)(basePrice + envFee);
+            return (decimal)((int)(basePrice + envFee));
         }
     }
 }

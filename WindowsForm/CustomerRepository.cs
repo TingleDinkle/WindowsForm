@@ -15,11 +15,11 @@ namespace WindowsForm
 
     public class CustomerDto
     {
-        public string Name { get; set; }
-        public string Type { get; set; }
+        public string Name { get; set; } = "";
+        public string Type { get; set; } = "";
         public int LastMonth { get; set; }
         public int ThisMonth { get; set; }
-        public int PeopleCount { get; set; } // Added field
+        public int PeopleCount { get; set; }
     }
 
     public class JsonCustomerRepository : ICustomerRepository
@@ -44,6 +44,7 @@ namespace WindowsForm
             }
             catch (Exception ex)
             {
+                // In a real app, use a logger.
                 Console.WriteLine("Error saving file: " + ex.Message);
             }
         }
@@ -72,8 +73,7 @@ namespace WindowsForm
             foreach (var c in customers)
             {
                 int people = (c is HouseholdCustomer h) ? h.PeopleCount : 0;
-                // Calculate total with VAT (1.1 * (Base + Env))
-                decimal finalBill = c.CalculateBill() * 1.1m;
+                decimal finalBill = c.CalculateBillWithVAT();
                 
                 lines.Add($"{EscapeCsv(c.Name)},{EscapeCsv(c.CustomerType)},{people},{c.LastMonthReading},{c.ThisMonthReading},{c.Usage},{finalBill:F0}");
             }
@@ -81,9 +81,9 @@ namespace WindowsForm
             File.WriteAllLines(filePath, lines);
         }
 
-        private string EscapeCsv(string field)
+        private string EscapeCsv(string? field)
         {
-            if (field == null) return "";
+            if (string.IsNullOrEmpty(field)) return "";
             if (field.Contains(",") || field.Contains("\"") || field.Contains("\n"))
             {
                 return $"\"{field.Replace("\"", "\"\"")}\"";
