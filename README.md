@@ -1,4 +1,4 @@
-# Water Bill Management System
+# Water Bill Calc(short for calculator)
 
 A robust Windows Forms application for managing water utility customers, built with C# and .NET 8.0. This system handles customer data management, bill calculation based on specific customer types (Household, Administrative, Production, Business), invoice generation, and data persistence.
 
