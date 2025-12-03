@@ -2,7 +2,7 @@
 
 A robust Windows Forms application for managing water utility customers, built with C# and .NET 8.0. This system handles customer data management, bill calculation based on specific customer types (Household, Administrative, Production, Business), invoice generation, and data persistence.
 
-## 🏗 Architecture
+## Architecture
 
 The application follows a strict **Object-Oriented Programming (OOP)** architecture, emphasizing separation of concerns and maintainability.
 
@@ -140,13 +140,13 @@ A specific window just for data entry.
 5.  **Add**: User clicks Add -> `CustomerForm` opens -> User enters data -> `Manager` creates object -> `Manager` saves to JSON -> `Form1` refreshes list.
 6.  **Calculate**: Inside `Customer.cs`, the `CalculateBill()` logic runs automatically whenever the bill is needed for display or invoice.
 
-## 🚀 Key Features
+## Key Features
 - **Tiered Calculation**: Accurate billing for households based on per-person usage quotas.
 - **Data Persistence**: Automatically saves data to `customers.json`; data persists across restarts.
 - **Invoicing**: Generates detailed text-based invoices (`Invoice_Name_Date.txt`).
 - **Export**: Exports the full customer list to `.csv` for Excel compatibility.
 - **Search & Sort**: Filter customers by name or sort the list alphabetically.
 
-## 🛠 Requirements
+## Requirements
 - .NET 8.0 SDK
 - Windows OS (for Windows Forms support)
