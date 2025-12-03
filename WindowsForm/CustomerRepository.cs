@@ -19,6 +19,7 @@ namespace WindowsForm
         public string Type { get; set; }
         public int LastMonth { get; set; }
         public int ThisMonth { get; set; }
+        public int PeopleCount { get; set; } // Added field
     }
 
     public class JsonCustomerRepository : ICustomerRepository
@@ -34,7 +35,8 @@ namespace WindowsForm
                     Name = c.Name,
                     Type = c.CustomerType,
                     LastMonth = c.LastMonthReading,
-                    ThisMonth = c.ThisMonthReading
+                    ThisMonth = c.ThisMonthReading,
+                    PeopleCount = (c is HouseholdCustomer h) ? h.PeopleCount : 0
                 }).ToList();
 
                 string jsonString = JsonSerializer.Serialize(dtos);
@@ -65,11 +67,15 @@ namespace WindowsForm
         public void ExportToCsv(List<Customer> customers, string filePath)
         {
             var lines = new List<string>();
-            lines.Add("Name,Type,LastMonth,ThisMonth,Usage,BillWithVAT");
+            lines.Add("Name,Type,People,LastMonth,ThisMonth,Usage,BillWithVAT");
             
             foreach (var c in customers)
             {
-                lines.Add($"{EscapeCsv(c.Name)},{EscapeCsv(c.CustomerType)},{c.LastMonthReading},{c.ThisMonthReading},{c.Usage},{c.CalculateBillWithVAT()}");
+                int people = (c is HouseholdCustomer h) ? h.PeopleCount : 0;
+                // Calculate total with VAT (1.1 * (Base + Env))
+                decimal finalBill = c.CalculateBill() * 1.1m;
+                
+                lines.Add($"{EscapeCsv(c.Name)},{EscapeCsv(c.CustomerType)},{people},{c.LastMonthReading},{c.ThisMonthReading},{c.Usage},{finalBill:F0}");
             }
 
             File.WriteAllLines(filePath, lines);

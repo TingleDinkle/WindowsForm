@@ -8,10 +8,20 @@ namespace WindowsForm
         [STAThread]
         static void Main()
         {
-            // To customize application configuration such as set high DPI settings or default font,
-            // see https://aka.ms/applicationconfiguration.
             ApplicationConfiguration.Initialize();
-            Application.Run(new Form1());
+
+            // Show Login Form first
+            LoginForm login = new LoginForm();
+            if (login.ShowDialog() == DialogResult.OK)
+            {
+                // If login successful, run the main form
+                Application.Run(new Form1());
+            }
+            else
+            {
+                // Exit application
+                Application.Exit();
+            }
         }
     }
 }

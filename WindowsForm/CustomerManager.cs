@@ -9,7 +9,6 @@ namespace WindowsForm
         private List<Customer> _customers;
         private readonly ICustomerRepository _repository;
 
-        // Dependency Injection: The manager depends on an abstraction (interface), not concrete file IO.
         public CustomerManager(ICustomerRepository repository)
         {
             _repository = repository;
@@ -23,18 +22,17 @@ namespace WindowsForm
              foreach (var dto in dtos)
              {
                  try {
-                    Customer c = CreateCustomerFactory(dto.Name, dto.Type, dto.LastMonth, dto.ThisMonth);
+                    Customer c = CreateCustomerFactory(dto.Name, dto.Type, dto.LastMonth, dto.ThisMonth, dto.PeopleCount);
                     if (c != null) _customers.Add(c);
                  } catch { /* Skip invalid data */ }
              }
         }
 
-        public bool AddCustomer(string name, string type, int lastMonth, int thisMonth)
+        public bool AddCustomer(string name, string type, int lastMonth, int thisMonth, int peopleCount = 0)
         {
             try 
             {
-                // Domain factory
-                Customer newCustomer = CreateCustomerFactory(name, type, lastMonth, thisMonth);
+                Customer newCustomer = CreateCustomerFactory(name, type, lastMonth, thisMonth, peopleCount);
                 
                 if (newCustomer != null)
                 {
@@ -50,20 +48,19 @@ namespace WindowsForm
             }
         }
 
-        public bool UpdateCustomer(int index, string name, string type, int lastMonth, int thisMonth)
+        public bool UpdateCustomer(int index, string name, string type, int lastMonth, int thisMonth, int peopleCount = 0)
         {
              if (index < 0 || index >= _customers.Count) return false;
 
              try
              {
-                 // Check if type changed. If so, we need a new object.
                  Customer existing = _customers[index];
                  
-                 // Normalize type strings for comparison
+                 // Check if type changed or if it is household we might need to update people count
                  if (!IsSameType(existing.CustomerType, type))
                  {
                      // Replace with new type
-                     Customer newCustomer = CreateCustomerFactory(name, type, lastMonth, thisMonth);
+                     Customer newCustomer = CreateCustomerFactory(name, type, lastMonth, thisMonth, peopleCount);
                      _customers[index] = newCustomer;
                  }
                  else
@@ -71,6 +68,11 @@ namespace WindowsForm
                      // Update existing object
                      existing.UpdateName(name);
                      existing.UpdateReadings(lastMonth, thisMonth);
+                     
+                     if (existing is HouseholdCustomer hh)
+                     {
+                         hh.UpdatePeopleCount(peopleCount);
+                     }
                  }
 
                  _repository.Save(_customers);
@@ -84,29 +86,41 @@ namespace WindowsForm
         
         private bool IsSameType(string type1, string type2)
         {
-            // Simple normalization for comparison
-            return type1.Replace(" ", "").Equals(type2.Replace(" ", ""), StringComparison.OrdinalIgnoreCase);
+            // Normalize for robust comparison
+            string t1 = NormalizeType(type1);
+            string t2 = NormalizeType(type2);
+            return t1 == t2;
         }
 
-        private Customer CreateCustomerFactory(string name, string type, int lastMonth, int thisMonth)
+        private string NormalizeType(string type)
         {
-            // Simple normalization
-            string normalizedType = type.Replace(" ", "").ToLower();
+             if (string.IsNullOrEmpty(type)) return "";
+             string lower = type.ToLower().Replace(" ", "").Replace("/", "");
+             
+             if (lower.Contains("household")) return "household";
+             if (lower.Contains("admin") || lower.Contains("public")) return "admin";
+             if (lower.Contains("production")) return "production";
+             if (lower.Contains("business")) return "business";
+             
+             return lower;
+        }
 
-            switch (normalizedType)
+        private Customer CreateCustomerFactory(string name, string type, int lastMonth, int thisMonth, int peopleCount)
+        {
+            string normalized = NormalizeType(type);
+
+            switch (normalized)
             {
                 case "household":
-                    return new HouseholdCustomer(name, lastMonth, thisMonth);
-                case "publicservices":
-                case "publicservice":
-                    return new PublicServiceCustomer(name, lastMonth, thisMonth);
-                case "productionunits":
-                    return new ProductionUnitCustomer(name, lastMonth, thisMonth);
-                case "businessservices":
-                    return new BusinessServiceCustomer(name, lastMonth, thisMonth);
+                    return new HouseholdCustomer(name, lastMonth, thisMonth, peopleCount);
+                case "admin":
+                    return new AdminCustomer(name, lastMonth, thisMonth);
+                case "production":
+                    return new ProductionCustomer(name, lastMonth, thisMonth);
+                case "business":
+                    return new BusinessCustomer(name, lastMonth, thisMonth);
                 default:
-                    // Fallback or throw
-                    return new HouseholdCustomer(name, lastMonth, thisMonth);
+                    throw new ArgumentException("Invalid Customer Type");
             }
         }
 
@@ -130,7 +144,7 @@ namespace WindowsForm
 
         public List<Customer> GetAllCustomers()
         {
-            return _customers; // Return reference or clone depending on strictness. Reference is fine here.
+            return _customers;
         }
 
         public List<string[]> GetAllCustomersForView()
@@ -138,13 +152,16 @@ namespace WindowsForm
             List<string[]> viewData = new List<string[]>();
             foreach (var customer in _customers)
             {
+                // Calculate final bill with VAT (1.1) based on your logic that the class returns (Bill+Env)
+                decimal finalBill = customer.CalculateBill() * 1.1m;
+                
                 viewData.Add(new string[] {
                     customer.Name,
                     customer.CustomerType,
                     customer.LastMonthReading.ToString(),
                     customer.ThisMonthReading.ToString(),
                     customer.Usage.ToString(),
-                    customer.CalculateBillWithVAT().ToString("N0")
+                    finalBill.ToString("N0")
                 });
             }
             return viewData;
@@ -158,6 +175,23 @@ namespace WindowsForm
         public void ExportToCsv(string filePath)
         {
             _repository.ExportToCsv(_customers, filePath);
+        }
+        
+        public void SortByName()
+        {
+            _customers.Sort((x, y) => string.Compare(x.Name, y.Name, StringComparison.OrdinalIgnoreCase));
+            _repository.Save(_customers);
+        }
+        
+        public void SortByUsage()
+        {
+            _customers.Sort((x, y) => y.Usage.CompareTo(x.Usage)); // Descending
+            _repository.Save(_customers);
+        }
+        
+        public List<Customer> SearchByName(string name)
+        {
+            return _customers.Where(c => c.Name.Contains(name, StringComparison.OrdinalIgnoreCase)).ToList();
         }
     }
 }

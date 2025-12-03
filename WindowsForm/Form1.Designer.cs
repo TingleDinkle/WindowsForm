@@ -28,148 +28,214 @@ namespace WindowsForm
         /// </summary>
         private void InitializeComponent()
         {
-            tbElectricityApplication = new Label();
-            btnSubmit = new Button();
-            btnDelete = new Button();
-            btnEdit = new Button();
-            btnExport = new Button();
-            lvCustomer = new ListView();
-            CustomerName = new ColumnHeader();
-            CustomerType = new ColumnHeader();
-            LastMonthElectricity = new ColumnHeader();
-            ThisMonthElectricity = new ColumnHeader();
-            UsageAmount = new ColumnHeader();
-            ElectricityBill = new ColumnHeader();
-            SuspendLayout();
+            this.tbElectricityApplication = new System.Windows.Forms.Label();
+            this.btnSubmit = new System.Windows.Forms.Button();
+            this.btnDelete = new System.Windows.Forms.Button();
+            this.btnEdit = new System.Windows.Forms.Button();
+            this.btnExport = new System.Windows.Forms.Button();
+            this.btnInvoice = new System.Windows.Forms.Button();
+            this.txtSearch = new System.Windows.Forms.TextBox();
+            this.btnSearch = new System.Windows.Forms.Button();
+            this.btnSortName = new System.Windows.Forms.Button();
+            this.lvCustomer = new System.Windows.Forms.ListView();
+            this.CustomerName = new System.Windows.Forms.ColumnHeader();
+            this.CustomerType = new System.Windows.Forms.ColumnHeader();
+            this.PeopleCount = new System.Windows.Forms.ColumnHeader();
+            this.LastMonthElectricity = new System.Windows.Forms.ColumnHeader();
+            this.ThisMonthElectricity = new System.Windows.Forms.ColumnHeader();
+            this.UsageAmount = new System.Windows.Forms.ColumnHeader();
+            this.ElectricityBill = new System.Windows.Forms.ColumnHeader();
+            this.SuspendLayout();
             // 
             // tbElectricityApplication
             // 
-            tbElectricityApplication.AutoSize = true;
-            tbElectricityApplication.Font = new Font("Segoe UI", 16.2F, FontStyle.Bold | FontStyle.Italic, GraphicsUnit.Point, 0);
-            tbElectricityApplication.Location = new Point(30, 20);
-            tbElectricityApplication.Name = "tbElectricityApplication";
-            tbElectricityApplication.Size = new Size(311, 38);
-            tbElectricityApplication.TabIndex = 12;
-            tbElectricityApplication.Text = "Electricity Application";
+            this.tbElectricityApplication.AutoSize = true;
+            this.tbElectricityApplication.Font = new System.Drawing.Font("Segoe UI", 16.2F, System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.tbElectricityApplication.Location = new System.Drawing.Point(30, 20);
+            this.tbElectricityApplication.Name = "tbElectricityApplication";
+            this.tbElectricityApplication.Size = new System.Drawing.Size(311, 38);
+            this.tbElectricityApplication.TabIndex = 12;
+            this.tbElectricityApplication.Text = "Water Bill Management";
             // 
             // btnSubmit
             // 
-            btnSubmit.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            btnSubmit.Location = new Point(30, 409);
-            btnSubmit.Name = "btnSubmit";
-            btnSubmit.Size = new Size(160, 29);
-            btnSubmit.TabIndex = 14;
-            btnSubmit.Text = "Add New Customer";
-            btnSubmit.UseVisualStyleBackColor = true;
-            btnSubmit.Click += button1_Click;
-            //
+            this.btnSubmit.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnSubmit.Location = new System.Drawing.Point(30, 409);
+            this.btnSubmit.Name = "btnSubmit";
+            this.btnSubmit.Size = new System.Drawing.Size(160, 29);
+            this.btnSubmit.TabIndex = 14;
+            this.btnSubmit.Text = "Add New Customer";
+            this.btnSubmit.UseVisualStyleBackColor = true;
+            this.btnSubmit.Click += new System.EventHandler(this.button1_Click);
+            // 
             // btnDelete
-            //
-            btnDelete.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            btnDelete.Location = new Point(200, 409);
-            btnDelete.Name = "btnDelete";
-            btnDelete.Size = new Size(120, 29);
-            btnDelete.TabIndex = 15;
-            btnDelete.Text = "Delete";
-            btnDelete.UseVisualStyleBackColor = true;
-            btnDelete.Click += btnDelete_Click;
-            //
+            // 
+            this.btnDelete.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnDelete.Location = new System.Drawing.Point(200, 409);
+            this.btnDelete.Name = "btnDelete";
+            this.btnDelete.Size = new System.Drawing.Size(120, 29);
+            this.btnDelete.TabIndex = 15;
+            this.btnDelete.Text = "Delete";
+            this.btnDelete.UseVisualStyleBackColor = true;
+            this.btnDelete.Click += new System.EventHandler(this.btnDelete_Click);
+            // 
             // btnEdit
-            //
-            btnEdit.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            btnEdit.Location = new Point(330, 409);
-            btnEdit.Name = "btnEdit";
-            btnEdit.Size = new Size(120, 29);
-            btnEdit.TabIndex = 16;
-            btnEdit.Text = "Edit";
-            btnEdit.UseVisualStyleBackColor = true;
-            btnEdit.Click += btnEdit_Click;
-            //
+            // 
+            this.btnEdit.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnEdit.Location = new System.Drawing.Point(330, 409);
+            this.btnEdit.Name = "btnEdit";
+            this.btnEdit.Size = new System.Drawing.Size(120, 29);
+            this.btnEdit.TabIndex = 16;
+            this.btnEdit.Text = "Edit";
+            this.btnEdit.UseVisualStyleBackColor = true;
+            this.btnEdit.Click += new System.EventHandler(this.btnEdit_Click);
+            // 
             // btnExport
-            //
-            btnExport.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            btnExport.Location = new Point(460, 409);
-            btnExport.Name = "btnExport";
-            btnExport.Size = new Size(120, 29);
-            btnExport.TabIndex = 19;
-            btnExport.Text = "Export";
-            btnExport.UseVisualStyleBackColor = true;
-            btnExport.Click += btnExport_Click;
+            // 
+            this.btnExport.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnExport.Location = new System.Drawing.Point(460, 409);
+            this.btnExport.Name = "btnExport";
+            this.btnExport.Size = new System.Drawing.Size(120, 29);
+            this.btnExport.TabIndex = 19;
+            this.btnExport.Text = "Export CSV";
+            this.btnExport.UseVisualStyleBackColor = true;
+            this.btnExport.Click += new System.EventHandler(this.btnExport_Click);
+            // 
+            // btnInvoice
+            // 
+            this.btnInvoice.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnInvoice.Location = new System.Drawing.Point(590, 409);
+            this.btnInvoice.Name = "btnInvoice";
+            this.btnInvoice.Size = new System.Drawing.Size(120, 29);
+            this.btnInvoice.TabIndex = 20;
+            this.btnInvoice.Text = "Print Invoice";
+            this.btnInvoice.UseVisualStyleBackColor = true;
+            this.btnInvoice.Click += new System.EventHandler(this.btnInvoice_Click);
+            // 
+            // txtSearch
+            // 
+            this.txtSearch.Location = new System.Drawing.Point(550, 30);
+            this.txtSearch.Name = "txtSearch";
+            this.txtSearch.Size = new System.Drawing.Size(150, 27);
+            this.txtSearch.TabIndex = 21;
+            this.txtSearch.PlaceholderText = "Search Name...";
+            // 
+            // btnSearch
+            // 
+            this.btnSearch.Location = new System.Drawing.Point(710, 29);
+            this.btnSearch.Name = "btnSearch";
+            this.btnSearch.Size = new System.Drawing.Size(80, 29);
+            this.btnSearch.TabIndex = 22;
+            this.btnSearch.Text = "Search";
+            this.btnSearch.UseVisualStyleBackColor = true;
+            this.btnSearch.Click += new System.EventHandler(this.btnSearch_Click);
+            // 
+            // btnSortName
+            // 
+            this.btnSortName.Location = new System.Drawing.Point(800, 29);
+            this.btnSortName.Name = "btnSortName";
+            this.btnSortName.Size = new System.Drawing.Size(130, 29);
+            this.btnSortName.TabIndex = 23;
+            this.btnSortName.Text = "Sort by Name";
+            this.btnSortName.UseVisualStyleBackColor = true;
+            this.btnSortName.Click += new System.EventHandler(this.btnSortName_Click);
             // 
             // lvCustomer
             // 
-            lvCustomer.Columns.AddRange(new ColumnHeader[] { CustomerName, CustomerType, LastMonthElectricity, ThisMonthElectricity, UsageAmount, ElectricityBill });
-            lvCustomer.GridLines = true;
-            lvCustomer.LabelWrap = false;
-            lvCustomer.Location = new Point(30, 80);
-            lvCustomer.Name = "lvCustomer";
-            lvCustomer.Size = new Size(900, 300);
-            lvCustomer.TabIndex = 17;
-            lvCustomer.UseCompatibleStateImageBehavior = false;
-            lvCustomer.View = View.Details;
+            this.lvCustomer.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.CustomerName,
+            this.CustomerType,
+            this.PeopleCount,
+            this.LastMonthElectricity,
+            this.ThisMonthElectricity,
+            this.UsageAmount,
+            this.ElectricityBill});
+            this.lvCustomer.GridLines = true;
+            this.lvCustomer.HideSelection = false;
+            this.lvCustomer.Location = new System.Drawing.Point(30, 80);
+            this.lvCustomer.Name = "lvCustomer";
+            this.lvCustomer.Size = new System.Drawing.Size(900, 300);
+            this.lvCustomer.TabIndex = 17;
+            this.lvCustomer.UseCompatibleStateImageBehavior = false;
+            this.lvCustomer.View = System.Windows.Forms.View.Details;
             // 
             // CustomerName
             // 
-            CustomerName.Text = "Customer Name";
-            CustomerName.Width = 150;
+            this.CustomerName.Text = "Customer Name";
+            this.CustomerName.Width = 150;
             // 
             // CustomerType
             // 
-            CustomerType.Text = "Customer Type";
-            CustomerType.Width = 150;
+            this.CustomerType.Text = "Customer Type";
+            this.CustomerType.Width = 150;
+            // 
+            // PeopleCount
+            // 
+            this.PeopleCount.Text = "People";
+            this.PeopleCount.Width = 60;
             // 
             // LastMonthElectricity
             // 
-            LastMonthElectricity.Text = "Last Month";
-            LastMonthElectricity.Width = 100;
+            this.LastMonthElectricity.Text = "Last Month";
+            this.LastMonthElectricity.Width = 90;
             // 
             // ThisMonthElectricity
             // 
-            ThisMonthElectricity.Text = "This Month";
-            ThisMonthElectricity.Width = 100;
+            this.ThisMonthElectricity.Text = "This Month";
+            this.ThisMonthElectricity.Width = 90;
             // 
             // UsageAmount
             // 
-            UsageAmount.Text = "Usage";
-            UsageAmount.Width = 100;
+            this.UsageAmount.Text = "Usage";
+            this.UsageAmount.Width = 80;
             // 
             // ElectricityBill
             // 
-            ElectricityBill.Text = "Bill (VND)";
-            ElectricityBill.Width = 150;
+            this.ElectricityBill.Text = "Bill (VND)";
+            this.ElectricityBill.Width = 150;
             // 
             // Form1
             // 
-            AutoScaleDimensions = new SizeF(8F, 20F);
-            AutoScaleMode = AutoScaleMode.Font;
-            BackColor = Color.HotPink;
-            ClientSize = new Size(960, 460);
-            Controls.Add(lvCustomer);
-            Controls.Add(btnEdit);
-            Controls.Add(btnDelete);
-            Controls.Add(btnSubmit);
-            Controls.Add(btnExport);
-            Controls.Add(tbElectricityApplication);
-            Name = "Form1";
-            Text = "Electricity Application - Dashboard";
-            Load += Form1_Load;
-            ResumeLayout(false);
-            PerformLayout();
+            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.BackColor = System.Drawing.Color.LightBlue;
+            this.ClientSize = new System.Drawing.Size(960, 460);
+            this.Controls.Add(this.lvCustomer);
+            this.Controls.Add(this.btnSortName);
+            this.Controls.Add(this.btnSearch);
+            this.Controls.Add(this.txtSearch);
+            this.Controls.Add(this.btnInvoice);
+            this.Controls.Add(this.btnExport);
+            this.Controls.Add(this.btnEdit);
+            this.Controls.Add(this.btnDelete);
+            this.Controls.Add(this.btnSubmit);
+            this.Controls.Add(this.tbElectricityApplication);
+            this.Name = "Form1";
+            this.Text = "Water Bill Management - Dashboard";
+            this.Load += new System.EventHandler(this.Form1_Load);
+            this.ResumeLayout(false);
+            this.PerformLayout();
+
         }
 
         #endregion
 
-        private Label tbElectricityApplication;
-        private Button btnSubmit;
-        private Button btnDelete;
-        private Button btnEdit;
-        private Button btnExport;
-        private ListView lvCustomer;
-        private ColumnHeader CustomerName;
-        private ColumnHeader CustomerType;
-        private ColumnHeader LastMonthElectricity;
-        private ColumnHeader ThisMonthElectricity;
-        private ColumnHeader UsageAmount;
-        private ColumnHeader ElectricityBill;
+        private System.Windows.Forms.Label tbElectricityApplication;
+        private System.Windows.Forms.Button btnSubmit;
+        private System.Windows.Forms.Button btnDelete;
+        private System.Windows.Forms.Button btnEdit;
+        private System.Windows.Forms.Button btnExport;
+        private System.Windows.Forms.Button btnInvoice;
+        private System.Windows.Forms.TextBox txtSearch;
+        private System.Windows.Forms.Button btnSearch;
+        private System.Windows.Forms.Button btnSortName;
+        private System.Windows.Forms.ListView lvCustomer;
+        private System.Windows.Forms.ColumnHeader CustomerName;
+        private System.Windows.Forms.ColumnHeader CustomerType;
+        private System.Windows.Forms.ColumnHeader PeopleCount;
+        private System.Windows.Forms.ColumnHeader LastMonthElectricity;
+        private System.Windows.Forms.ColumnHeader ThisMonthElectricity;
+        private System.Windows.Forms.ColumnHeader UsageAmount;
+        private System.Windows.Forms.ColumnHeader ElectricityBill;
     }
 }

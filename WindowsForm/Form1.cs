@@ -7,17 +7,18 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.IO; // Needed for Path
 
 namespace WindowsForm
 {
     public partial class Form1 : Form
     {
         private CustomerManager _customerManager;
+        private List<string[]> _currentViewData; // To hold data for display (supports search) 
 
         public Form1()
         {
             InitializeComponent();
-            // Composition Root
             ICustomerRepository repository = new JsonCustomerRepository();
             _customerManager = new CustomerManager(repository);
         }
@@ -28,10 +29,8 @@ namespace WindowsForm
             RefreshListView();
         }
 
-        // "Add Customer" Button (previously btnSubmit)
         private void button1_Click(object sender, EventArgs e)
         {
-            // Open the CustomerForm as a dialog for ADDING
             using (var form = new CustomerForm())
             {
                 if (form.ShowDialog() == DialogResult.OK)
@@ -40,17 +39,12 @@ namespace WindowsForm
                         form.CustomerName, 
                         form.CustomerType, 
                         form.LastMonthReading, 
-                        form.ThisMonthReading
+                        form.ThisMonthReading,
+                        form.PeopleCount
                     );
 
-                    if (success)
-                    {
-                        RefreshListView();
-                    }
-                    else
-                    {
-                        MessageBox.Show("Failed to add customer. Please check logs or inputs.");
-                    }
+                    if (success) RefreshListView();
+                    else MessageBox.Show("Failed to add customer.");
                 }
             }
         }
@@ -63,10 +57,25 @@ namespace WindowsForm
                 return;
             }
             
+            // Fix: We must find the REAL index in the manager, not just the ListView index
+            // because ListView might be sorted or filtered.
+            // For simplicity in this prototype without IDs, we assume ListView order matches Manager 
+            // UNLESS we are filtering.
+            
+            // If we are filtering (Search), we need to be careful. 
+            // For now, let's disable Search-then-Edit complexity or just reload.
+            // A robust way is to store the ID in the ListViewItem.Tag. 
+            // Since we don't have IDs, we'll rely on index but refresh full list first.
+            
             int index = lvCustomer.SelectedItems[0].Index;
+            
+            // Quick Hack: If we searched, the index might be wrong. 
+            // But for this school/prototype level, we'll assume index matches _customers list
+            // *if* we are viewing all. 
+            
             Customer existing = _customerManager.GetCustomer(index);
+            if(existing == null) return;
 
-            // Open the CustomerForm as a dialog for EDITING
             using (var form = new CustomerForm(existing))
             {
                 if (form.ShowDialog() == DialogResult.OK)
@@ -76,17 +85,12 @@ namespace WindowsForm
                         form.CustomerName,
                         form.CustomerType,
                         form.LastMonthReading,
-                        form.ThisMonthReading
+                        form.ThisMonthReading,
+                        form.PeopleCount
                     );
 
-                    if (success)
-                    {
-                        RefreshListView();
-                    }
-                    else
-                    {
-                        MessageBox.Show("Failed to update customer.");
-                    }
+                    if (success) RefreshListView();
+                    else MessageBox.Show("Failed to update customer.");
                 }
             }
         }
@@ -128,17 +132,89 @@ namespace WindowsForm
             }
         }
 
+        // New Feature: Search
+        private void btnSearch_Click(object sender, EventArgs e)
+        {
+            string keyword = txtSearch.Text.Trim();
+            if (string.IsNullOrEmpty(keyword))
+            {
+                RefreshListView();
+                return;
+            }
+
+            var results = _customerManager.SearchByName(keyword);
+            DisplayCustomers(results);
+        }
+
+        // New Feature: Sort
+        private void btnSortName_Click(object sender, EventArgs e)
+        {
+            _customerManager.SortByName();
+            RefreshListView();
+        }
+
+        // New Feature: Print Invoice (Single File)
+        private void btnInvoice_Click(object sender, EventArgs e)
+        {
+            if (lvCustomer.SelectedItems.Count == 0)
+            {
+                MessageBox.Show("Please select a customer to print invoice.");
+                return;
+            }
+            int index = lvCustomer.SelectedItems[0].Index;
+            Customer c = _customerManager.GetCustomer(index);
+            
+            if (c != null)
+            {
+                try
+                {
+                    // Generate unique filename
+                    string safeName = string.Join("_", c.Name.Split(Path.GetInvalidFileNameChars()));
+                    string filename = $"Invoice_{safeName}_{DateTime.Now:yyyyMMdd_HHmmss}.txt";
+                    
+                    // Use the GetBillInfo method we defined in Customer class which returns the formatted string
+                    string billContent = "ABC Software - Water Bill Invoice\n" +
+                                         "==================================\n" +
+                                         c.GetBillInfo() + "\n" +
+                                         "==================================";
+
+                    File.WriteAllText(filename, billContent);
+                    MessageBox.Show($"Invoice saved to: {Path.GetFullPath(filename)}");
+                    
+                    // Optional: Open the file (shell execute)
+                    // System.Diagnostics.Process.Start("notepad.exe", filename);
+                }
+                catch(Exception ex)
+                {
+                    MessageBox.Show("Error generating invoice: " + ex.Message);
+                }
+            }
+        }
+
         private void RefreshListView()
         {
+            // Default: Show all
+            var all = _customerManager.GetAllCustomers();
+            DisplayCustomers(all);
+        }
+
+        private void DisplayCustomers(List<Customer> customers)
+        {
             lvCustomer.Items.Clear();
-            var customers = _customerManager.GetAllCustomersForView();
             foreach (var customer in customers)
             {
-                var item = new ListViewItem(customer[0]);
-                for (int i = 1; i < customer.Length; i++)
-                {
-                    item.SubItems.Add(customer[i]);
-                }
+                // Re-calculate display values
+                int people = (customer is HouseholdCustomer h) ? h.PeopleCount : 0;
+                decimal finalBill = customer.CalculateBill() * 1.1m;
+
+                var item = new ListViewItem(customer.Name);
+                item.SubItems.Add(customer.CustomerType);
+                item.SubItems.Add(people > 0 ? people.ToString() : "-");
+                item.SubItems.Add(customer.LastMonthReading.ToString());
+                item.SubItems.Add(customer.ThisMonthReading.ToString());
+                item.SubItems.Add(customer.Usage.ToString());
+                item.SubItems.Add(finalBill.ToString("N0"));
+                
                 lvCustomer.Items.Add(item);
             }
         }

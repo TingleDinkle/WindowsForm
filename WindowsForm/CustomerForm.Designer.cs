@@ -23,6 +23,8 @@ namespace WindowsForm
             this.txtLastMonth = new System.Windows.Forms.TextBox();
             this.label4 = new System.Windows.Forms.Label();
             this.txtThisMonth = new System.Windows.Forms.TextBox();
+            this.labelPeople = new System.Windows.Forms.Label();
+            this.txtPeopleCount = new System.Windows.Forms.TextBox();
             this.btnSave = new System.Windows.Forms.Button();
             this.btnCancel = new System.Windows.Forms.Button();
             this.SuspendLayout();
@@ -58,18 +60,35 @@ namespace WindowsForm
             this.cboType.FormattingEnabled = true;
             this.cboType.Items.AddRange(new object[] {
             "Household",
-            "Public Service",
-            "Production Units",
-            "Business Services"});
+            "Administrative Agency",
+            "Production Unit",
+            "Business Service"});
             this.cboType.Location = new System.Drawing.Point(160, 77);
             this.cboType.Name = "cboType";
             this.cboType.Size = new System.Drawing.Size(250, 28);
             this.cboType.TabIndex = 3;
+            this.cboType.SelectedIndexChanged += new System.EventHandler(this.cboType_SelectedIndexChanged);
+            // 
+            // labelPeople
+            // 
+            this.labelPeople.AutoSize = true;
+            this.labelPeople.Location = new System.Drawing.Point(30, 130);
+            this.labelPeople.Name = "labelPeople";
+            this.labelPeople.Size = new System.Drawing.Size(100, 20);
+            this.labelPeople.TabIndex = 10;
+            this.labelPeople.Text = "People Count:";
+            // 
+            // txtPeopleCount
+            // 
+            this.txtPeopleCount.Location = new System.Drawing.Point(160, 127);
+            this.txtPeopleCount.Name = "txtPeopleCount";
+            this.txtPeopleCount.Size = new System.Drawing.Size(250, 27);
+            this.txtPeopleCount.TabIndex = 11;
             // 
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(30, 130);
+            this.label5.Location = new System.Drawing.Point(30, 180);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(86, 20);
             this.label5.TabIndex = 4;
@@ -77,7 +96,7 @@ namespace WindowsForm
             // 
             // txtLastMonth
             // 
-            this.txtLastMonth.Location = new System.Drawing.Point(160, 127);
+            this.txtLastMonth.Location = new System.Drawing.Point(160, 177);
             this.txtLastMonth.Name = "txtLastMonth";
             this.txtLastMonth.Size = new System.Drawing.Size(250, 27);
             this.txtLastMonth.TabIndex = 5;
@@ -85,7 +104,7 @@ namespace WindowsForm
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(30, 180);
+            this.label4.Location = new System.Drawing.Point(30, 230);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(86, 20);
             this.label4.TabIndex = 6;
@@ -93,7 +112,7 @@ namespace WindowsForm
             // 
             // txtThisMonth
             // 
-            this.txtThisMonth.Location = new System.Drawing.Point(160, 177);
+            this.txtThisMonth.Location = new System.Drawing.Point(160, 227);
             this.txtThisMonth.Name = "txtThisMonth";
             this.txtThisMonth.Size = new System.Drawing.Size(250, 27);
             this.txtThisMonth.TabIndex = 7;
@@ -101,7 +120,7 @@ namespace WindowsForm
             // btnSave
             // 
             this.btnSave.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.btnSave.Location = new System.Drawing.Point(160, 240);
+            this.btnSave.Location = new System.Drawing.Point(160, 280);
             this.btnSave.Name = "btnSave";
             this.btnSave.Size = new System.Drawing.Size(110, 40);
             this.btnSave.TabIndex = 8;
@@ -112,7 +131,7 @@ namespace WindowsForm
             // btnCancel
             // 
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnCancel.Location = new System.Drawing.Point(300, 240);
+            this.btnCancel.Location = new System.Drawing.Point(300, 280);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(110, 40);
             this.btnCancel.TabIndex = 9;
@@ -123,13 +142,15 @@ namespace WindowsForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(460, 310);
+            this.ClientSize = new System.Drawing.Size(460, 350);
             this.Controls.Add(this.btnCancel);
             this.Controls.Add(this.btnSave);
             this.Controls.Add(this.txtThisMonth);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.txtLastMonth);
             this.Controls.Add(this.label5);
+            this.Controls.Add(this.txtPeopleCount);
+            this.Controls.Add(this.labelPeople);
             this.Controls.Add(this.cboType);
             this.Controls.Add(this.label6);
             this.Controls.Add(this.txtName);
@@ -153,6 +174,8 @@ namespace WindowsForm
         private System.Windows.Forms.TextBox txtLastMonth;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.TextBox txtThisMonth;
+        private System.Windows.Forms.Label labelPeople;
+        private System.Windows.Forms.TextBox txtPeopleCount;
         private System.Windows.Forms.Button btnSave;
         private System.Windows.Forms.Button btnCancel;
     }

@@ -57,21 +57,36 @@ namespace WindowsForm
         {
             return CalculateBill() * 1.1m;
         }
+        
+        public decimal CalculateEnvFee()
+        {
+            return CalculateBill() * 0.10m;
+        }
 
+        // Updated to match the WaterCalc logic (Bill + EnvFee + VAT on Total?)
+        // Wait, looking at the provided code:
+        // HouseHold: (Bill + Bill*0.10) cast to int -> This is Total. Then printBill says "Bill (Including 10% VAT): billAmount * 1.1".
+        // The provided CLI code has a slight logical weirdness:
+        // calculateHouseholdBill returns `(int)totalWithEnv` where totalWithEnv = bill + 10% env.
+        // THEN printBill takes that result and multiplies by 1.1 for VAT.
+        // So final is (Bill + Env) * 1.1.
+        // Admin/Production/Business: calculate...Bill returns (base + env).
+        // So consistency is maintained: CalculateBill() in this class should return (Base + EnvFee).
+        
         public virtual string GetBillInfo()
         {
-            decimal billAmount = CalculateBill();
-            decimal billWithVAT = CalculateBillWithVAT();
+            decimal billAmount = CalculateBill(); // This includes EnvFee based on your CLI code
+            decimal billWithVAT = billAmount * 1.1m;
             DateTime today = DateTime.Now;
             DateTime fiveDaysLater = today.AddDays(5);
 
             return $"Dear Customer {Name}\n" +
                    $"Customer Type: {CustomerType}\n" +
-                   $"Last month's electricity meter readings: {LastMonthReading}\n" +
-                   $"This month's electricity meter readings: {ThisMonthReading}\n" +
-                   $"Electricity Usage This Month: {Usage} kWh\n" +
-                   $"Electricity Bill: {billAmount:N0} VND\n" +
-                   $"Electricity Bill (Including 10% VAT): {billWithVAT:N0} VND\n" +
+                   $"Last month's water meter readings: {LastMonthReading}\n" +
+                   $"This month's water meter readings: {ThisMonthReading}\n" +
+                   $"Water Usage This Month: {Usage} m3\n" +
+                   $"Water Bill: {billAmount:N0} VND\n" +
+                   $"Water Bill (Including 10% VAT): {billWithVAT:N0} VND\n" +
                    $"Payment Due Date: {fiveDaysLater:dd/MM/yyyy}";
         }
     }
@@ -79,94 +94,114 @@ namespace WindowsForm
     // Concrete class for Household customers
     public class HouseholdCustomer : Customer
     {
-        public HouseholdCustomer(string name, int lastMonth, int thisMonth) 
-            : base(name, lastMonth, thisMonth) { }
+        public int PeopleCount { get; private set; }
+
+        public HouseholdCustomer(string name, int lastMonth, int thisMonth, int peopleCount) 
+            : base(name, lastMonth, thisMonth) 
+        {
+            if (peopleCount <= 0) throw new ArgumentException("Household must have at least 1 person.");
+            PeopleCount = peopleCount;
+        }
+
+        public void UpdatePeopleCount(int count)
+        {
+            if (count <= 0) throw new ArgumentException("Household must have at least 1 person.");
+            PeopleCount = count;
+        }
 
         public override string CustomerType => "Household";
 
         public override decimal CalculateBill()
         {
-            int eValue = Usage;
-            const int PRICE_L1 = 1984, PRICE_L2 = 2050, PRICE_L3 = 2380, 
-                      PRICE_L4 = 2998, PRICE_L5 = 3350, PRICE_L6 = 3460;
-            const int MAX_VAL_L1 = 50, MAX_VAL_L2 = 100, MAX_VAL_L3 = 200, 
-                      MAX_VAL_L4 = 300, MAX_VAL_L5 = 400;
-
-            if (eValue < 0) return 0;
-
-            if (eValue <= MAX_VAL_L1)
-                return eValue * PRICE_L1;
+            int wValue = Usage;
+            int people = PeopleCount;
             
-            if (eValue <= MAX_VAL_L2)
-                return (eValue - MAX_VAL_L1) * PRICE_L2 
-                       + MAX_VAL_L1 * PRICE_L1;
+            const double PRICE_T1 = 5973,
+                         PRICE_T2 = 7052,
+                         PRICE_T3 = 8699,
+                         PRICE_T4 = 15929;
+            
+            int tier1 = 10 * people;
+            int tier2 = 20 * people;
+            int tier3 = 30 * people;
+            
+            double billAmount = 0;
 
-            if (eValue <= MAX_VAL_L3)
-                return (eValue - MAX_VAL_L2) * PRICE_L3 
-                       + MAX_VAL_L1 * PRICE_L1 
-                       + (MAX_VAL_L2 - MAX_VAL_L1) * PRICE_L2;
+            if (wValue <= tier1)
+            {
+                billAmount = wValue * PRICE_T1;
+            }
+            else if (wValue <= tier2)
+            {
+                billAmount = (wValue - tier1) * PRICE_T2
+                            + tier1 * PRICE_T1;
+            }
+            else if (wValue <= tier3)
+            {
+                billAmount = (wValue - tier2) * PRICE_T3
+                            + tier1 * PRICE_T1 + (tier2 - tier1) * PRICE_T2;
+            }
+            else
+            {
+                billAmount = (wValue - tier3) * PRICE_T4
+                            + tier1 * PRICE_T1 + (tier2 - tier1) * PRICE_T2 + (tier3 - tier2) * PRICE_T3;
+            }
 
-            if (eValue <= MAX_VAL_L4)
-                return (eValue - MAX_VAL_L3) * PRICE_L4 
-                       + MAX_VAL_L1 * PRICE_L1 
-                       + (MAX_VAL_L2 - MAX_VAL_L1) * PRICE_L2 
-                       + (MAX_VAL_L3 - MAX_VAL_L2) * PRICE_L3;
-
-            if (eValue <= MAX_VAL_L5)
-                return (eValue - MAX_VAL_L4) * PRICE_L5 
-                       + MAX_VAL_L1 * PRICE_L1 
-                       + (MAX_VAL_L2 - MAX_VAL_L1) * PRICE_L2 
-                       + (MAX_VAL_L3 - MAX_VAL_L2) * PRICE_L3 
-                       + (MAX_VAL_L4 - MAX_VAL_L3) * PRICE_L4;
-
-            return (eValue - MAX_VAL_L5) * PRICE_L6 
-                   + MAX_VAL_L1 * PRICE_L1 
-                   + (MAX_VAL_L2 - MAX_VAL_L1) * PRICE_L2 
-                   + (MAX_VAL_L3 - MAX_VAL_L2) * PRICE_L3 
-                   + (MAX_VAL_L4 - MAX_VAL_L3) * PRICE_L4 
-                   + (MAX_VAL_L5 - MAX_VAL_L4) * PRICE_L5;
+            double envFee = billAmount * 0.10;
+            return (decimal)(billAmount + envFee);
+        }
+        
+        public override string GetBillInfo()
+        {
+            return $"Number of people in household: {PeopleCount}\n" + base.GetBillInfo();
         }
     }
 
-    // Concrete class for Public Service customers
-    public class PublicServiceCustomer : Customer
+    // Concrete class for Administrative Agency
+    public class AdminCustomer : Customer
     {
-        public PublicServiceCustomer(string name, int lastMonth, int thisMonth) 
+        public AdminCustomer(string name, int lastMonth, int thisMonth) 
             : base(name, lastMonth, thisMonth) { }
 
-        public override string CustomerType => "Public Service";
+        public override string CustomerType => "Administrative Agency";
 
         public override decimal CalculateBill()
         {
-            return Usage * 2887;
+            double basePrice = Usage * 9955;
+            double envFee = basePrice * 0.10;
+            return (decimal)(basePrice + envFee);
         }
     }
 
     // Concrete class for Production Units
-    public class ProductionUnitCustomer : Customer
+    public class ProductionCustomer : Customer
     {
-        public ProductionUnitCustomer(string name, int lastMonth, int thisMonth) 
+        public ProductionCustomer(string name, int lastMonth, int thisMonth) 
             : base(name, lastMonth, thisMonth) { }
 
-        public override string CustomerType => "Production Units";
+        public override string CustomerType => "Production Unit";
 
         public override decimal CalculateBill()
         {
-            return 0; // Logic not defined in original code
+            double basePrice = Usage * 11615;
+            double envFee = basePrice * 0.10;
+            return (decimal)(basePrice + envFee);
         }
     }
 
     // Concrete class for Business Services
-    public class BusinessServiceCustomer : Customer
+    public class BusinessCustomer : Customer
     {
-        public BusinessServiceCustomer(string name, int lastMonth, int thisMonth) 
+        public BusinessCustomer(string name, int lastMonth, int thisMonth) 
             : base(name, lastMonth, thisMonth) { }
 
-        public override string CustomerType => "Business Services";
+        public override string CustomerType => "Business Service";
 
         public override decimal CalculateBill()
         {
-            return 0; // Logic not defined in original code
+            double basePrice = Usage * 22068;
+            double envFee = basePrice * 0.10;
+            return (decimal)(basePrice + envFee);
         }
     }
 }
